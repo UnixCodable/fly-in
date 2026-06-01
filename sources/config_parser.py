@@ -10,17 +10,22 @@
 #                                                                             #
 # *************************************************************************** #
 
-from pydantic import BaseModel, field_validator, Field, ValidationError, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    ValidationError,
+    model_validator
+    )
 from typing import List
 
 
 class LineParser(BaseModel, validate_assignment=True):
-    lines: List[str] = Field()
+    lines: List[List[str]] = Field()
 
-    @field_validator('start_hub')
-    @classmethod
-    def start_parsing(cls, v):
-        if len(v) != 1:
+    @model_validator(mode='after')
+    def start_parsing(self):
+        hub_list = [line for line in self.lines if line[0] == "start_hub"]
+        if len(hub_list) != 1:
             raise ValueError('There must be only one starting hub.')
 
 
@@ -44,6 +49,6 @@ def read_map() -> List:
 
 
 try:
-    object = LineParser(read_map())
+    object = LineParser(lines=read_map())
 except ValidationError as err:
     print(err)
