@@ -10,14 +10,33 @@
 #                                                                             #
 # *************************************************************************** #
 
-from pydantic import BaseModel, model_validator, Field
+from pydantic import BaseModel, model_validator, Field, ValidationError
 
 
 class ConfigParser(BaseModel):
-    pass
+    start_hub: str = Field()
+    hub: list[str] = Field()
+    end_hub: str = Field()
 
 
-with open("maps/easy/01_linear_path.txt") as file:
-    for line in file.readlines():
-        if '#' not in line[0]:
-            print(line)
+def setup_config():
+    config = dict()
+    lines = []
+    with open("maps/hard/03_ultimate_challenge.txt") as file:
+        for line in file.readlines():
+            try:
+                line = line[0:line.index("#")]
+            except ValueError:
+                pass
+            if line == '\n' or line == '':
+                continue
+            line = line.strip().split(':')
+            lines.append(line)
+    print(lines)
+    print(config)
+
+
+try:
+    object = setup_config()
+except ValidationError as err:
+    print(err)
