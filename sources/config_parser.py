@@ -10,18 +10,23 @@
 #                                                                             #
 # *************************************************************************** #
 
-from pydantic import BaseModel, model_validator, Field, ValidationError
+from pydantic import BaseModel, field_validator, Field, ValidationError, model_validator
+from typing import List
 
 
-class ConfigParser(BaseModel):
-    start_hub: str = Field()
-    hub: list[str] = Field()
-    end_hub: str = Field()
+class LineParser(BaseModel, validate_assignment=True):
+    lines: List[str] = Field()
+
+    @field_validator('start_hub')
+    @classmethod
+    def start_parsing(cls, v):
+        if len(v) != 1:
+            raise ValueError('There must be only one starting hub.')
 
 
-def setup_config():
-    config = dict()
+def read_map() -> List:
     lines = []
+    temp = []
     with open("maps/hard/03_ultimate_challenge.txt") as file:
         for line in file.readlines():
             try:
@@ -30,13 +35,15 @@ def setup_config():
                 pass
             if line == '\n' or line == '':
                 continue
-            line = line.strip().split(':')
-            lines.append(line)
-    print(lines)
-    print(config)
+            temp = line.split(':')
+            temp[0] = temp[0].strip()
+            temp[1] = temp[1].strip()
+            print(temp)
+            lines.append(temp)
+        return lines
 
 
 try:
-    object = setup_config()
+    object = LineParser(read_map())
 except ValidationError as err:
     print(err)
