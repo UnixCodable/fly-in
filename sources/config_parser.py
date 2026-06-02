@@ -19,12 +19,15 @@ from pydantic import (
 from typing import List
 
 
-class LineParser(BaseModel, validate_assignment=True):
+class LineParser(BaseModel):
     lines: List[List[str]] = Field()
 
     @model_validator(mode='after')
     def invalid_values(self):
-        
+        for li in self.lines:
+            if li[0] not in ('connection', 'hub', 'start_hub', 'end_hub', 'nb_drones'):
+                raise ValueError('')
+        return self
 
     @model_validator(mode='after')
     def number_of_drones(self):
@@ -46,6 +49,9 @@ class LineParser(BaseModel, validate_assignment=True):
         if len(hub_list) != 1:
             raise ValueError('There must be only one starting hub.')
         return self
+
+class ValueParser(BaseModel):
+    pass
 
 
 def read_map() -> List:
