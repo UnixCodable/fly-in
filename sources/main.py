@@ -6,10 +6,10 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/02 10:40:23 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/02 11:07:58 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/03 16:15:31 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from config_parser import read_map, LineParser
+from config_parser import parse_map
 
-object = LineParser(lines=read_map())
+object = parse_map()

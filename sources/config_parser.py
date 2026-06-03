@@ -14,49 +14,53 @@ from pydantic import (
     BaseModel,
     Field,
     ValidationError,
-    model_validator
+    model_validator,
+    field_validator,
+    validate_call_decorator
     )
 from typing import List
 
 
-class LineParser(BaseModel):
-    lines: List[List[str]] = Field()
+class ConfigParser(BaseModel, validate_assignment=True):
+    keys: list[str]
+    hub_name: list[str]
 
-    @model_validator(mode='after')
-    def invalid_values(self):
-        for li in self.lines:
-            if li[0] not in ('connection', 'hub', 'start_hub', 'end_hub', 'nb_drones'):
-                raise ValueError('')
-        return self
+    @field_validator('hub_name', mode='after')
+    @classmethod
+    def validate_hub_name(cls, v):
+        if len(set(v)) != len(v):
+            raise ValueError('Hub names cannot be duplicated')
+        return v
 
-    @model_validator(mode='after')
-    def number_of_drones(self):
-        if self.lines[0][0] == 'nb_drones':
-            if 'nb_drones' not in [li[0] for li in self.lines[1:]]:
-                return self
-        raise ValueError('There must be only one nb_drones value and it must be at the first line of the config file.')
-
-    @model_validator(mode='after')
-    def start_parsing(self):
-        hub_list = [li for li in self.lines if li[0] == "start_hub"]
-        if len(hub_list) != 1:
+    @field_validator('keys', mode='after')
+    @classmethod
+    def validate_keys(cls, v):
+        start_list = [k for k in v if k == "start_hub"]
+        end_list = [k for k in v if k == "end_hub"]
+        for k in v:
+            if k not in ('connection', 'hub', 'start_hub', 'end_hub', 'nb_drones'):
+                raise ValueError('Key can only contain "hub", "start_hub", "end_hub", "connection", "nb_drones"')
+        if v[0] != 'nb_drones':
+            raise ValueError('No nb_drones at first line of config.')
+        if 'nb_drones' in [k for k in v[1:]]:
+            raise ValueError('There must be only one nb_drones value.')
+        if len(start_list) != 1:
             raise ValueError('There must be only one starting hub.')
-        return self
-
-    @model_validator(mode='after')
-    def end_parsing(self):
-        hub_list = [li for li in self.lines if li[0] == "end_hub"]
-        if len(hub_list) != 1:
-            raise ValueError('There must be only one starting hub.')
-        return self
-
-class ValueParser(BaseModel):
-    pass
+        if len(end_list) != 1:
+            raise ValueError('There must be only one ending hub.')
+        return v
 
 
-def read_map() -> List:
-    lines = []
+def parse_map() -> List:
+    parsed = ConfigParser.model_construct()
     temp = []
+    lines = {
+        'keys': [],
+        'hub_name': [],
+        'hub_coordinates': [],
+        'hub_metadata': [],
+        'connections': []
+    }
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for line in file.readlines():
             try:
@@ -65,8 +69,6 @@ def read_map() -> List:
                 pass
             if line == '\n' or line == '':
                 continue
-            temp = line.split(':')
-            temp[0] = temp[0].strip()
-            temp[1] = temp[1].strip()
-            lines.append(temp)
-        return lines
+            lines['keys'].append(line.split(':')[0].strip())
+        parsed.keys = lines.get('keys', [])
+    return parsed
