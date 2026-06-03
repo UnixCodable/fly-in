@@ -1,0 +1,4 @@
+en.subject.pdf
+/.venv
+uv.lock
+/sources/__pycache__
