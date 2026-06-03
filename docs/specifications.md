@@ -7,4 +7,12 @@ while navigating this dynamic network under a set of strict constraints and opti
 
 ### Lore and ideas :
 
-Travelling in space in Star Wars universe, episode 42, to establish communications through the galaxies
+Travelling in space in Star Wars universe, episode 42, to establish communications through the galaxy.
+
+### Composition :
+
+
+- **Multithreading** : To accelerate process and make drones go simultaneously.
+- **Semaphores** : To handle multiple drones passing to a zone
+- **Visualization** : 
+
