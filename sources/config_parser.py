@@ -65,42 +65,45 @@ class ConfigParser(BaseModel, validate_assignment=True):
 
 def parse_map() -> ConfigParser:
     parsed = ConfigParser.model_construct()
-    dot = []
-    space = []
-    lines: dict[str, List] = {
-        'keys': [],
-        'hub_name': [],
-        'hub_coordinates': [],
-        'hub_metadata': [],
-        'connections': []
-    }
+    # lines = []
+    keys_values = []
+    # space = []
+    # lines: dict[str, List] = {
+    #     'keys': [],
+    #     'hub_name': [],
+    #     'hub_coordinates': [],
+    #     'hub_metadata': [],
+    #     'connections': []
+    # }
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for line in file.readlines():
-            try:
-                line = line[0:line.index("#")]
-            except ValueError:
-                pass
+            line = line[0:line.index("#") if '#' in line else -1]
             if line == '\n' or line == '':
                 continue
-            dot = line.split(':', maxsplit=1)
-            if dot[0] in ('hub', 'start_hub', 'end_hub'):
-                space = dot[1].strip().split(maxsplit=3)
-                lines['hub_name'].append(space[0] if len(space) >= 3 else None)
-                lines['hub_coordinates'].append((space[1], space[2]) if len(space) >= 3 else None)
-                lines['hub_metadata'].append(space[3] if len(space) >= 4 else None)
-            elif dot[0] == 'connection':
-                space = dot[1].strip().split(maxsplit=1)
-            else:
-                space = [dot[1].strip()]
-            lines['keys'].append(dot[0].strip())
+            line = line.replace(':', ' ')
+            keys_values.append(line.split(max))
+            # dot = line.split(':', maxsplit=1)
+            # if dot[0] in ('hub', 'start_hub', 'end_hub'):
+            #     space = dot[1].strip().split(maxsplit=3)
+            #     lines['hub_name'].append(space[0] if len(space) >= 3 else None)
+            #     lines['hub_coordinates'].append((space[1], space[2]) if len(space) >= 3 else None)
+            #     lines['hub_metadata'].append(space[3] if len(space) >= 4 else None)
+            # elif dot[0] == 'connection':
+            #     space = dot[1].strip().split(maxsplit=1)
+            # else:
+            #     space = [dot[1].strip()]
+            # lines['keys'].append(dot[0].strip())
+        print(keys_values)
     try:
-        parsed.keys = lines.get('keys', [])
-        parsed.hub_name = lines.get('hub_name', [])
-        parsed.hub_coordinates = lines.get('hub_coordinates', [])
-        parsed.hub_metadata = lines.get('hub_metadata', [])
+        # parsed.keys = lines.get('keys', [])
+        # parsed.hub_name = lines.get('hub_name', [])
+        # parsed.hub_coordinates = lines.get('hub_coordinates', [])
+        # parsed.hub_metadata = lines.get('hub_metadata', [])
+        parsed.keys = keys
+        # parsed.hub_name = [line.split()[0] if 'hub']
     except ValidationError as err:
         for e in err.errors():
             print(e.get('msg'))
         sys.exit(0)
-    print(parsed.hub_metadata)
+    print(parsed.keys)
     return parsed
