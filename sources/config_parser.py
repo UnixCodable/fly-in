@@ -102,5 +102,5 @@ def parse_map() -> ConfigParser:
         for e in err.errors():
             print(e.get('msg'))
         sys.exit(0)
-    # print(parsed.hub_metadata)
+    print(parsed.hub_metadata)
     return parsed
