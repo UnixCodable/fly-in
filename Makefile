@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/02 08:09:16 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/03 01:03:14 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/05 11:34:02 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -24,9 +24,9 @@ clean:
 	rm -rf sources/.mypy_cache/
 
 lint:
-	python3 -m flake8 .
+	python3 -m flake8 . --exclude=.venv/*
 	python3 -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	python3 -m flake8 .
+	python3 -m flake8 . --exclude=.venv/*
 	python3 -m mypy . --strict

@@ -12,6 +12,7 @@
 
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Field,
     ValidationError,
     model_validator,
@@ -22,11 +23,11 @@ from typing import List, Any
 import sys
 
 
-class ConfigParser(BaseModel, validate_assignment=True):
+class ConfigParser(BaseModel):
     keys: list[str]
     hub_name: list[str]
     hub_coordinates: list[tuple[int, int]]
-    hub_metadata: list[str | None]
+    # hub_metadata: list[str | None]
     nb_drones: int = Field(gt=0)
 
     @field_validator('hub_name', mode='after')
@@ -64,21 +65,20 @@ class ConfigParser(BaseModel, validate_assignment=True):
 
 
 def parse_map() -> ConfigParser:
-    parsed = ConfigParser.model_construct()
-    keys_values = []
+    values = []
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for line in file.readlines():
             line = line[0:line.index("#") if '#' in line else -1]
             if line == '\n' or line == '':
                 continue
-            line = line.replace(':', ' ')
-            keys_values.append(line.split())
-        print(keys_values)
+            values.append(line.split(':')[:1] + line.split()[1:])
     try:
-        parsed.keys = [k[0] for k in keys_values]
-        parsed.nb_drones = keys_values[0][1]
-        parsed.hub_name = [k[1] for k in keys_values if 'hub' in k[0]]
-        parsed.hub_coordinates = [(int(k[2]), int(k[3])) for k in keys_values if 'hub' in k[0]]
+        parsed = ConfigParser(
+            keys=[k[0] for k in values],
+            nb_drones=values[0][1],
+            hub_name=[v[1] for v in values if 'hub' in v[0]],
+            hub_coordinates=[(v[2], v[3]) for v in values if 'hub' in v[0]]
+        )
     except ValidationError as err:
         for e in err.errors():
             print(e.get('msg'))
@@ -86,4 +86,5 @@ def parse_map() -> ConfigParser:
     print(parsed.keys)
     print(parsed.nb_drones)
     print(parsed.hub_name)
+    print(parsed.hub_coordinates)
     return parsed

@@ -8,3 +8,15 @@ dependencies = [
     "pygame",
     "pydantic"
 ]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "mypy>=2.1.0",
+]
+
+[tool.mypy]
+plugins = ['pydantic.mypy']
+
+[tool.pydantic-mypy]
+init_typed = false
