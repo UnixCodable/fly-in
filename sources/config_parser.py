@@ -17,7 +17,6 @@ from pydantic import (
     model_validator,
     field_validator,
     validate_call_decorator,
-    mypy
     )
 from typing import List, Any
 import sys
