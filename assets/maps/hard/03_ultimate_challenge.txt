@@ -4,7 +4,7 @@ nb_drones: 15
 start_hub: start 0 0 [color=green max_drones=15]
 
 # Layer 1: Initial distribution nightmare
-hub: dist_gate1 1 -1
+hub: dist_gate1 1 -1 []
 hub: dist_gate2 1 1 [color=orange]
 hub: dist_gate3 1 0 [color=orange]
 
@@ -24,7 +24,7 @@ hub: overflow1 3 -1 [zone=restricted color=orange max_drones=3]
 hub: overflow2 4 -1 [zone=restricted color=orange max_drones=3]
 
 # Layer 4: Priority puzzle with traps
-hub: #priority_hub 5 0 [zone=priority color=cyan max_drones=4]
+hub: priority_hub 5 0 [zone=priority color=cyan max_drones=4]
 hub: priority_trap1 5 1 [zone=priority color=cyan]
 hub: priority_trap2 6 1 [zone=priority color=cyan]
 hub: priority_dead_end 6 2 [color=red]
