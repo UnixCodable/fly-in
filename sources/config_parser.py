@@ -40,25 +40,18 @@ class ConfigParser(BaseModel):
 
         start_list = [key for key in v if key == "start_hub"]
         end_list = [key for key in v if key == "end_hub"]
+        accredited = {'connection', 'hub', 'start_hub', 'end_hub', 'nb_drones'}
 
         for key in v:
-            if key not in ('connection',
-                           'hub',
-                           'start_hub',
-                           'end_hub',
-                           'nb_drones'):
+            if key not in accredited:
                 raise ValueError('Key can only contain "hub", "start_hub",'
                                  '"end_hub", "connection", "nb_drones".')
-
         if v[0] != 'nb_drones':
             raise ValueError('No nb_drones at first line of config.')
-
         if 'nb_drones' in [k for k in v[1:]]:
             raise ValueError('There must be only one nb_drones value.')
-
         if len(start_list) != 1:
             raise ValueError('There must be only one starting hub.')
-
         if len(end_list) != 1:
             raise ValueError('There must be only one ending hub.')
 
@@ -67,47 +60,17 @@ class ConfigParser(BaseModel):
 
 def read_map() -> list:
     values = []
-    metadata = []
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for nb, line in enumerate(file.readlines()):
-            if ' ' in line[0]:
-                raise ValueError(f'One or multiple space on line {nb + 1}')
             line = line[0:line.index("#") if '#' in line else -1]
-            if '[' in line:
-                if ']' not in line[line.index('['):]:
-                    raise ValueError(f'Metadata must be a list: line {nb + 1}')
-                metadata = line[line.index('[') + 1:line.index(']')].split()
-                line = line[0:line.index('[')] + line[line.index('['):line.index(']')].replace(' ', ',') + line[line.index(']'):]
+
             if line == '\n' or line == '':
                 continue
-            temp = line.split(':')[:1] + line.split()[1:]
-            if 'hub' in temp[0]:
-                print(len(temp))
-                if len(temp) > 5:
-                    raise ValueError(f'Too much values on line {nb + 1}')
-                values.append(
-                    [temp[0],
-                     temp[1] if len(temp) > 1 else None,
-                     temp[2] if len(temp) > 2 else None,
-                     temp[3] if len(temp) > 3 else None,
-                     metadata if len(temp) > 4 else None]
-                     )
-            elif 'connection' in temp[0]:
-                if len(temp) > 3:
-                    raise ValueError(f'Too much values on line {nb + 1}')
-                values.append(
-                    [temp[0],
-                     temp[1] if len(temp) > 1 else None,
-                     metadata if len(temp) > 2 else None]
-                     )
-            elif 'nb_drone' in temp[0]:
-                if len(temp) > 2:
-                    raise ValueError(f'Too much values on line {nb + 1}')
-                values.append(
-                    [temp[0],
-                     temp[1] if len(temp) > 1 else None]
-                     )
-        print(values)
+            if ' ' in line[0] or '  ' in line or '::' in line:
+                raise ValueError(f'Error: separators on line {nb + 1}')
+
+            temp = line.split(':', maxsplit=1)[:1] + line.split()[1:]
+            
     return values
 
 
@@ -130,9 +93,44 @@ def parse_map() -> ConfigParser:
         print(err)
         print('Please ensure format is "<key>: <value> ... <[metadata]>."')
         sys.exit(0)
-    print(parsed.keys)
-    print(parsed.nb_drones)
-    print(parsed.hub_name)
-    print(parsed.hub_coordinates)
-    print(parsed.hub_metadata)
     return parsed
+
+
+        #     if ' ' in line[0]:
+        #         raise ValueError(f'One or multiple space on line {nb + 1}')
+        #     line = line[0:line.index("#") if '#' in line else -1]
+        #     if '[' in line:
+        #         if ']' not in line[line.index('['):]:
+        #             raise ValueError(f'Metadata must be a list: line {nb + 1}')
+        #         line = line[0:line.index('[')] + line[line.index('['):line.index(']')].replace(' ', ',') + line[line.index(']'):]
+        #     if line == '\n' or line == '':
+        #         continue
+        #     temp = line.split(':')[:1] + line.split()[1:]
+
+        #     if 'hub' in temp[0]:
+        #         if len(temp) > 5:
+        #             raise ValueError(f'Too much values on line {nb + 1}')
+        #         values.append(
+        #             [temp[0],
+        #              temp[1] if len(temp) > 1 else None,
+        #              temp[2] if len(temp) > 2 else None,
+        #              temp[3] if len(temp) > 3 else None,
+        #              metadata if len(temp) > 4 else None]
+        #              )
+
+        #     elif 'connection' in temp[0]:
+        #         if len(temp) > 3:
+        #             raise ValueError(f'Too much values on line {nb + 1}')
+        #         values.append(
+        #             [temp[0],
+        #              temp[1] if len(temp) > 1 else None,
+        #              metadata if len(temp) > 2 else None]
+        #              )
+        #     elif 'nb_drone' in temp[0]:
+        #         if len(temp) > 2:
+        #             raise ValueError(f'Too much values on line {nb + 1}')
+        #         values.append(
+        #             [temp[0],
+        #              temp[1] if len(temp) > 1 else None]
+        #              )
+        # print(values)
