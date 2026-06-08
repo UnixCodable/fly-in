@@ -16,7 +16,7 @@ from pydantic import (
     ValidationError,
     field_validator,
     )
-# from typing import List, Any
+from typing import List, Any
 import sys
 
 
@@ -24,7 +24,7 @@ class ConfigParser(BaseModel):
     keys: list[str]
     hub_name: list[str]
     hub_coordinates: list[tuple[int, int]]
-    hub_metadata: list[list[str] | None]
+    hub_metadata: Any
     nb_drones: int = Field(gt=0)
 
     @field_validator('hub_name', mode='after')
@@ -67,6 +67,7 @@ class ConfigParser(BaseModel):
 
 def read_map() -> list:
     values = []
+    metadata = []
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for nb, line in enumerate(file.readlines()):
             if ' ' in line[0]:
@@ -75,9 +76,8 @@ def read_map() -> list:
             if '[' in line:
                 if ']' not in line[line.index('['):]:
                     raise ValueError(f'Metadata must be a list: line {nb + 1}')
-                array = line[line.index('['):line.index(']')].replace(' ', '","')
-                array = "[" + '"' + array[1:] + '"' + "]"
-                line = (line[:line.index('[')] + array + line[line.index(']') + 1:])
+                metadata = line[line.index('[') + 1:line.index(']')].split()
+                line = line[0:line.index('[')] + line[line.index('['):line.index(']')].replace(' ', ',') + line[line.index(']'):]
             if line == '\n' or line == '':
                 continue
             temp = line.split(':')[:1] + line.split()[1:]
@@ -90,7 +90,7 @@ def read_map() -> list:
                      temp[1] if len(temp) > 1 else None,
                      temp[2] if len(temp) > 2 else None,
                      temp[3] if len(temp) > 3 else None,
-                     temp[4] if len(temp) > 4 else None,]
+                     metadata if len(temp) > 4 else None]
                      )
             elif 'connection' in temp[0]:
                 if len(temp) > 3:
@@ -98,7 +98,7 @@ def read_map() -> list:
                 values.append(
                     [temp[0],
                      temp[1] if len(temp) > 1 else None,
-                     temp[2] if len(temp) > 2 else None]
+                     metadata if len(temp) > 2 else None]
                      )
             elif 'nb_drone' in temp[0]:
                 if len(temp) > 2:
@@ -107,6 +107,7 @@ def read_map() -> list:
                     [temp[0],
                      temp[1] if len(temp) > 1 else None]
                      )
+        print(values)
     return values
 
 
