@@ -59,7 +59,6 @@ class ConfigParser(BaseModel):
 
 
 def read_map() -> list:
-    values = []
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for nb, line in enumerate(file.readlines()):
             line = line[0:line.index("#") if '#' in line else -1]
@@ -69,7 +68,7 @@ def read_map() -> list:
             if ' ' in line[0] or '  ' in line or '::' in line:
                 raise ValueError(f'Error: separators on line {nb + 1}')
 
-            temp = line.split(':', maxsplit=1)[:1] + line.split()[1:]
+            values = line.split(':', maxsplit=1)[:1] + line.split()[1:]
             
     return values
 
