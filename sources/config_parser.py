@@ -92,10 +92,6 @@ def parse_map():
             print(e.get('msg'))
         print('Please ensure format is "<key>: <value> ... <[metadata]>."')
         sys.exit(0)
-    except ValueError as err:
-        print(err)
-        print('Please ensure format is "<key>: <value> ... <[metadata]>."')
-        sys.exit(0)
     return
 
 
