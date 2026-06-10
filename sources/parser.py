@@ -17,11 +17,15 @@ from enum import Enum
 import sys
 
 
-class MetadataParam(Enum):
-    pass
-
-
 class KeyParam(Enum):
+    HUB = 'hub'
+    START_HUB = 'start_hub'
+    END_HUB = 'end_hub'
+    CONNECTION = 'connection'
+    NB_DRONE = 'nb_drone'
+
+
+class MetadataParam(Enum):
     pass
 
 
