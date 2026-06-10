@@ -10,9 +10,36 @@
 #                                                                             #
 # *************************************************************************** #
 
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import BaseModel, model_validator, Field, ValidationError, field_validator
 # from typing import List, Any
 import sys
+
+class Parsing(BaseModel, validate_assignment=True):
+    line:   tuple[int, str]
+    keys:         list[str] = Field(default=[])
+    values: list[list[str]] = Field(default=[])
+
+    @model_validator(mode='after')
+    def line_check_separator(self):
+        if ' ' in self.line[1][0] or '  ' in self.line[1] or '::' in self.line[1]:
+            raise ValueError(f"(line {self.line[0]}) : Separators issue")
+        return self
+
+    @model_validator(mode='after')
+    def line_partition(self):
+        key, sep, val = self.line[1].partition(': ')
+        if not key or not sep or not val:
+            raise ValueError(f"(line {self.line[0]}) : Missing key, value or separator")
+        self.keys.append(key)
+        self.values.append(val.split())
+        return self
+
+    @model_validator(mode='after')
+    def keys_checker(self):
+        if self.keys[-1] not in ('hub', 'start_hub', 'end_hub', 'connection', 'nb_drones'):
+            raise ValueError(f"(line {self.line[0]}) : Invalid key")
+        return self
+
 
 class Drone(BaseModel):
     number:      int = Field(gt=0)
@@ -43,30 +70,22 @@ class Hub(BaseModel):
         return name
 
 
-def read_map() -> list:
-    hub, connection, drone = ([], [], [])
+def read_map() -> dict:
+    parser = Parsing.model_construct()
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for nb, line in enumerate(file.readlines()):
-            line = line[0:line.index("#") if '#' in line else -1]
 
+            line = line[0:line.index("#") if '#' in line else -1]
             if line == '\n' or line == '':
                 continue
-            if ' ' in line[0] or '  ' in line or '::' in line:
-                raise ValueError(f"(line {nb + 1}) : Wrong separators")
 
-            key, sep, val = line.partition(':')
-            if not sep:
-                raise ValueError(f"(line {nb + 1}) : Missing ':'")
-            if not val:
-                raise ValueError(f"(line {nb + 1}) : Missing values")
-            line = line.split(':')[:1] + line.split()[1:]
-            print(line)
-    return (hub, connection, drone)
+            parser.line = (nb + 1, line)
+    return
 
 
 def parse_map():
     try:
-        hub, connection, drone = read_map()
+        read_map()
         # connection = Connections()
     except ValidationError as err:
         for e in err.errors():
