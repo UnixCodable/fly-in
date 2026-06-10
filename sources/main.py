@@ -6,10 +6,10 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/02 10:40:23 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/06 00:13:59 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/10 17:38:39 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from config_parser import parse_map
+from parser import parse_map
 
 object = parse_map()
