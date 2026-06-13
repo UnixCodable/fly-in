@@ -24,8 +24,19 @@ class Connection(BaseModel):
     max_link:    int
     line:        int = Field(ge=0)
 
+    @model_validator(mode='after')
+    def validate_zone(self):
+        if "".join(self.first_zone.split('_')).isalnum() is False:
+            raise ValueError(f"(line {self.line}) Zone {self.first_zone} must only contain alphanumeric or"
+                             " underscore characters")
+        if "".join(self.second_zone.split('_')).isalnum() is False:
+            raise ValueError(f"(line {self.line}) Zone {self.second_zone} must only contain alphanumeric or"
+                             " underscore characters")
+        return self
+
 
 class Hub(BaseModel):
+    hub_type:    str
     name:        str = Field(max_length=30)
     coordinates: tuple[int, int]
     color:       str
