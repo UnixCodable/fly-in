@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/13 10:19:20 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/13 13:32:43 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -48,7 +48,10 @@ class LineParser(BaseModel):
             if len(self.values) < 3:
                 raise ValueError(l_num + "Not enough values")
         if 'connection' in self.key:
-            self.values = val.split('-', maxsplit=1)[0:2] + val.split(maxsplit=1)[1:]
+            self.values = val.split(maxsplit=1)
+            self.values[:1] = self.values[0].split('-', maxsplit=1)
+            if len(self.values) < 2:
+                raise ValueError(l_num + "Not enough values, check connection format.")
 
         return self
 
