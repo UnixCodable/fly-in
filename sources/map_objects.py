@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/10 17:43:11 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/10 17:43:56 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/13 03:14:24 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -28,9 +28,9 @@ class Connection(BaseModel):
 class Hub(BaseModel):
     name:        str = Field(max_length=30)
     coordinates: tuple[int, int]
-    color:       str = Field(default='black')
-    zone:        str = Field(default='normal')
-    max_drones:  int = Field(default=1, gt=0)
+    color:       str
+    zone:        str
+    max_drones:  int
     line: int = Field(ge=0)
 
     @model_validator(mode='after')

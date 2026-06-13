@@ -29,48 +29,80 @@ class MetadataParam(Enum):
     pass
 
 
-class Parsing(BaseModel, validate_assignment=True):
-    line:   tuple[int, str] = Field(default=(0, ''))
-    keys:         list[str] = Field(default=[])
-    values: list[list[str]] = Field(default=[])
+class Parsing(BaseModel):
+    line:      tuple[int, str] = Field()
+    key:                 str = Field(default='')
+    values:        list[str] = Field(default=[])
+    metadata: dict[str, str] = Field(default={})
 
     @model_validator(mode='after')
     def line_check_separator(self):
-        if ' ' in self.line[1][0] or '  ' in self.line[1] or '::' in self.line[1]:
-            raise ValueError(f"(line {self.line[0]}) : Separators issue")
+        string = self.line[1]
+
+        if ' ' in string[0] or '  ' in string or '::' in string:
+            raise ValueError(f"(line {self.line[0]}) : Separators issue.")
         return self
 
     @model_validator(mode='after')
     def line_partition(self):
+        l_num = self.line[0]
 
-        key, sep, val = self.line[1].partition(': ')
-        if not key or not sep or not val:
-            raise ValueError(f"(line {self.line[0]}) : Missing key, value or separator")
+        self.key, sep, val = self.line[1].partition(': ')
+        if not self.key or not sep or not val:
+            raise ValueError(f"(line {l_num}) : Missing key, value or separator")
+        if self.key not in ('hub', 'start_hub', 'end_hub', 'connection', 'nb_drones'):
+            raise ValueError(f"(line {l_num}) : Invalid key")
 
-        self.keys.append(key)
-        if 'nb_drones' in key:
-            self.values.append(val.split())
-        if 'hub' in key:
-            self.values.append(val.split(maxsplit=3))
-        if 'connection' in key:
-            self.values.append(val.split(maxsplit=2))
+        if 'nb_drones' in self.key:
+            self.values = val.split()
+            if len(self.values) > 1:
+                raise ValueError(f"(line {l_num}) : Too much values")
+        if 'hub' in self.key:
+            self.values = val.split(maxsplit=3)
+            if len(self.values) < 3:
+                raise ValueError(f"(line {l_num}) : Not enough values")
+        if 'connection' in self.key:
+            self.values = val.split(maxsplit=2)
 
         return self
 
     @model_validator(mode='after')
-    def keys_checker(self):
-        if self.keys[-1] not in ('hub',
-                                 'start_hub',
-                                 'end_hub',
-                                 'connection',
-                                 'nb_drones'):
-            raise ValueError(f"(line {self.line[0]}) : Invalid key")
+    def metadata_partition(self):
+        values = self.values
+        l_num = self.line[0]
+
+        if 'hub' in self.key and len(values) == 4:
+            if values[3].startswith('[') and values[3].endswith(']'):
+                metadata = values[3][1:-1].split()
+                self.metadata = {}
+                for m in metadata:
+                    key, sep, val = m.partition('=')
+                    if not key or not sep or not val:
+                        raise ValueError(f'(line {l_num}) Invalid metadata.')
+                    if key not in ('color', 'zone', 'max_drones') or key in self.metadata.keys():
+                        raise ValueError(f'(line {l_num}) Invalid metadata.')
+                    self.metadata.update({key: val})
+            else:
+                raise ValueError(f'(line {l_num}) Too much values. Ensure metadata are in list.')
+        if 'connection' in self.key and len(values) == 2:
+            if values[1].startswith('[') and values[1].endswith(']'):
+                metadata = values[1][1:-1].split()
+                self.metadata = {}
+                for m in metadata:
+                    key, sep, val = m.partition('=')
+                    if not key or not sep or not val:
+                        raise ValueError(f'(line {l_num}) Invalid metadata.')
+                    if key not in ('max_link_capacity') or key in self.metadata.keys():
+                        raise ValueError(f'(line {l_num}) Invalid metadata.')
+                    self.metadata.update({key: val})
+            else:
+                raise ValueError(f'(line {l_num}) Too much values. Ensure metadata are in list.')
         return self
 
 
 def read_map():
-    parser = Parsing.model_construct()
     hub: list[Hub] = []
+    connection: list[Connection] = []
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for nb, line in enumerate(file.readlines()):
 
@@ -78,14 +110,17 @@ def read_map():
             if line == '\n' or line == '':
                 continue
 
-            parser.line = (nb + 1, line)
-            if 'hub' in parser.keys[-1]:
+            parser = Parsing(line=(nb + 1, line))
+            if 'hub' in parser.key:
                 hub.append(Hub(
-                    name=parser.values[-1][0],
-                    coordinates=(parser.values[-1][1], parser.values[-1][2]),
+                    name=parser.values[0],
+                    coordinates=(parser.values[1], parser.values[2]),
                     line=nb + 1,
+                    color=parser.metadata.get('color', 'black'),
+                    zone=parser.metadata.get('zone', 'normal'),
+                    max_drones=parser.metadata.get('max_drones', 1),
                     ))
-        print(parser)
+        print(hub)
     return
 
 
@@ -94,7 +129,7 @@ def parse_map():
         read_map()
     except ValidationError as err:
         for e in err.errors():
-            print('\033[1;31mERROR - ' + e.get('msg').split(', ', 1)[1])
+            print(e.get('msg'))
         print('Please ensure format is "<key>: <value> ... <[metadata]>."\033[0m')
         sys.exit(0)
     return
