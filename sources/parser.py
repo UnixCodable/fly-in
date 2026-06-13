@@ -1,12 +1,12 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                         :::      ::::::::   #
-#   config_parser.py                                    :+:      :+:    :+:   #
+#   parser.py                                           :+:      :+:    :+:   #
 #                                                     +:+ +:+         +:+     #
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/05/31 23:21:40 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/13 10:19:20 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -15,7 +15,7 @@ from map_objects import Hub, Connection, Drone
 import sys
 
 
-class Parsing(BaseModel):
+class LineParser(BaseModel):
     line:      tuple[int, str] = Field()
     key:                 str = Field(default='')
     values:        list[str] = Field(default=[])
@@ -31,24 +31,24 @@ class Parsing(BaseModel):
 
     @model_validator(mode='after')
     def line_partition(self):
-        l_num = self.line[0]
+        l_num = f'(line {self.line[0]}) : '
 
         self.key, sep, val = self.line[1].partition(': ')
         if not self.key or not sep or not val:
-            raise ValueError(f"(line {l_num}) : Missing key, value or separator")
+            raise ValueError(l_num + "Missing key, value or separator.")
         if self.key not in ('hub', 'start_hub', 'end_hub', 'connection', 'nb_drones'):
-            raise ValueError(f"(line {l_num}) : Invalid key")
+            raise ValueError(l_num + "Invalid key")
 
         if 'nb_drones' in self.key:
             self.values = val.split()
             if len(self.values) > 1:
-                raise ValueError(f"(line {l_num}) : Too much values")
+                raise ValueError(l_num + "Too much values for nb_drones.")
         if 'hub' in self.key:
             self.values = val.split(maxsplit=3)
             if len(self.values) < 3:
-                raise ValueError(f"(line {l_num}) : Not enough values")
+                raise ValueError(l_num + "Not enough values")
         if 'connection' in self.key:
-            self.values = val.split(maxsplit=2)
+            self.values = val.split('-', maxsplit=1)[0:2] + val.split(maxsplit=1)[1:]
 
         return self
 
@@ -70,9 +70,9 @@ class Parsing(BaseModel):
                     self.metadata.update({key: val})
             else:
                 raise ValueError(f'(line {l_num}) Too much values. Ensure metadata are in list.')
-        if 'connection' in self.key and len(values) == 2:
-            if values[1].startswith('[') and values[1].endswith(']'):
-                metadata = values[1][1:-1].split()
+        if 'connection' in self.key and len(values) == 3:
+            if values[2].startswith('[') and values[2].endswith(']'):
+                metadata = values[2][1:-1].split()
                 self.metadata = {}
                 for m in metadata:
                     key, sep, val = m.partition('=')
@@ -96,7 +96,7 @@ def read_map():
             if line == '\n' or line == '':
                 continue
 
-            parser = Parsing(line=(nb + 1, line))
+            parser = LineParser(line=(nb + 1, line))
             if 'hub' in parser.key:
                 hub.append(Hub(
                     name=parser.values[0],
@@ -106,7 +106,11 @@ def read_map():
                     zone=parser.metadata.get('zone', 'normal'),
                     max_drones=parser.metadata.get('max_drones', 1),
                     ))
-        print(hub)
+            # if 'connection' in parser.key:
+            #     connection.append(Connection(
+            #         first_zone=parser.values[0]
+            #     ))
+            print(parser)
     return
 
 
