@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/13 13:32:43 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/13 13:38:27 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -109,10 +109,12 @@ def read_map():
                     zone=parser.metadata.get('zone', 'normal'),
                     max_drones=parser.metadata.get('max_drones', 1),
                     ))
-            # if 'connection' in parser.key:
-            #     connection.append(Connection(
-            #         first_zone=parser.values[0]
-            #     ))
+            if 'connection' in parser.key:
+                connection.append(Connection(
+                    first_zone=parser.values[0],
+                    second_zone=parser.values[1],
+                    max_link_capacity=parser.metadata.get('max_link_capacity')
+                ))
             print(parser)
     return
 
