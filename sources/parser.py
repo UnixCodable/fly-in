@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/13 13:38:27 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/13 13:53:32 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -14,6 +14,11 @@ from pydantic import BaseModel, model_validator, Field, ValidationError, field_v
 from map_objects import Hub, Connection, Drone
 import sys
 
+
+class GlobalParser(BaseModel):
+    hubs: list[Hub]
+    connections: list[Connection]
+    drone: Drone
 
 class LineParser(BaseModel):
     line:      tuple[int, str] = Field()
@@ -89,9 +94,9 @@ class LineParser(BaseModel):
         return self
 
 
-def read_map():
-    hub: list[Hub] = []
-    connection: list[Connection] = []
+def read_map() -> GlobalParser:
+    hub_list: list[Hub] = []
+    connection_list: list[Connection] = []
     with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
         for nb, line in enumerate(file.readlines()):
 
@@ -101,7 +106,7 @@ def read_map():
 
             parser = LineParser(line=(nb + 1, line))
             if 'hub' in parser.key:
-                hub.append(Hub(
+                hub_list.append(Hub(
                     name=parser.values[0],
                     coordinates=(parser.values[1], parser.values[2]),
                     line=nb + 1,
@@ -110,13 +115,13 @@ def read_map():
                     max_drones=parser.metadata.get('max_drones', 1),
                     ))
             if 'connection' in parser.key:
-                connection.append(Connection(
+                connection_list.append(Connection(
                     first_zone=parser.values[0],
                     second_zone=parser.values[1],
-                    max_link_capacity=parser.metadata.get('max_link_capacity')
+                    max_link=parser.metadata.get('max_link_capacity', 1),
+                    line=nb + 1
                 ))
-            print(parser)
-    return
+    return GlobalParser(hubs=hub_list, connections=connection_list)
 
 
 def parse_map():
