@@ -12,21 +12,7 @@
 
 from pydantic import BaseModel, model_validator, Field, ValidationError, field_validator
 from map_objects import Hub, Connection, Drone
-from typing import List, Any, Optional
-from enum import Enum
 import sys
-
-
-class KeyParam(Enum):
-    HUB = 'hub'
-    START_HUB = 'start_hub'
-    END_HUB = 'end_hub'
-    CONNECTION = 'connection'
-    NB_DRONE = 'nb_drone'
-
-
-class MetadataParam(Enum):
-    pass
 
 
 class Parsing(BaseModel):
