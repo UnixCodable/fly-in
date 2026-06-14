@@ -6,11 +6,11 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/13 13:53:32 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/14 13:02:22 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
-from pydantic import BaseModel, model_validator, Field, ValidationError, field_validator
+from pydantic import BaseModel, model_validator, Field, ValidationError
 from enum import Enum
 from map_objects import Hub, Connection, Drone
 import sys
@@ -127,12 +127,12 @@ class LineParser(BaseModel):
             self.values = val.strip().split()
             if len(self.values) > 1:
                 raise ValueError(l_num + "Too much values for nb_drones.")
-    
+
         if 'hub' in self.key:
             self.values = val.strip().split(maxsplit=3)
             if len(self.values) < 3:
                 raise ValueError(l_num + "Not enough values")
-    
+
         if 'connection' in self.key:
             self.values = val.strip().split(maxsplit=1)
             self.values[:1] = self.values[0].split('-', maxsplit=1)
