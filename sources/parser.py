@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/14 13:02:22 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/14 13:18:24 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -98,6 +98,7 @@ class GlobalParser(BaseModel):
         if self.drone[0].line != lines[0]:
             raise ValueError(f'(line {self.drone[0].line}) : nb_drones must be at first line of the file')
         return self
+
 
 class LineParser(BaseModel):
     line:    tuple[int, str] = Field()
