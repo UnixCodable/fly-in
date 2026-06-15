@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/06/10 17:43:11 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/15 20:02:59 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/15 23:17:49 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -39,9 +39,9 @@ class Hub(BaseModel):
     hub_type:    str
     name:        str = Field(max_length=30)
     coordinates: tuple[int, int]
-    color:       str
+    color:       str = Field(pattern=r"^([a-zA-Z]+)$")
     zone:        str
-    max_drones:  int
+    max_drones:  int = Field(ge=0)
     line: int = Field(ge=0)
 
     @model_validator(mode='after')

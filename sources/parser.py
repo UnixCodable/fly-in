@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/15 19:19:23 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/15 22:57:26 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -211,6 +211,7 @@ def read_map() -> GlobalParser:
                         zone=parser.metadata.get('zone', 'normal'),
                         max_drones=parser.metadata.get('max_drones', 1),
                         ))
+                    print(hub_list[-1].color)
                 if 'connection' in parser.key:
                     connection_list.append(Connection(
                         first_zone=parser.values[0],
