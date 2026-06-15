@@ -6,25 +6,27 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/14 13:18:24 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/14 15:30:39 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
 from pydantic import BaseModel, model_validator, Field, ValidationError
 from enum import Enum
 from map_objects import Hub, Connection, Drone
+from typing import Optional
 import sys
 
 
 class Error(Enum):
-    DUP_NAME = "Duplicated name"
-    ST_HUB_MISSING = "No start_hub found. Please define one."
+    E1000 = "Duplicated name"
+    E1001 = "No start_hub found. Please define one."
+    E1002 = "Too many start_hub."
 
     @classmethod
-    def get_err(cls, error, line=None):
+    def get_err(cls, code: str, line: Optional[int] = None):
         if line is None:
-            return f"{cls[error].value}"
-        return f"(line {line}) : {cls[error].value}"
+            return Error[code].value
+        return f"(line {line}), {Error[code].value}"
 
 
 class GlobalParser(BaseModel):
@@ -38,16 +40,16 @@ class GlobalParser(BaseModel):
         hub_name = [h.name for h in self.hubs]
         for index, h in enumerate(hub_name):
             if h in hub_name[:index]:
-                raise ValueError(Error.get_err('DUP_NAME', hub_line[index]))
+                raise ValueError(Error.get_err('E1000', hub_line[index]))
         return self
 
     @model_validator(mode='after')
     def check_start(self):
         hub_line = [h.line for h in self.hubs if h.hub_type == 'start_hub']
         if len(hub_line) == 0:
-            raise ValueError(Error.get_err('ST_HUB_MISSING'))
+            raise ValueError(Error.get_err('E1001'))
         if len(hub_line) > 1:
-            raise ValueError(f"(line {hub_line[1:]}) Too many start_hub.")
+            raise ValueError(Error['E1002'].value)
         return self
 
     @model_validator(mode='after')
@@ -180,45 +182,44 @@ def read_map() -> GlobalParser:
     hub_list: list[Hub] = []
     connection_list: list[Connection] = []
     drone_list: list[Drone] = []
-    with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
-        for nb, line in enumerate(file.readlines()):
-
-            line = line[0:line.index("#") if '#' in line else -1]
-            if line == '\n' or line == '':
-                continue
-
-            parser = LineParser(line=(nb + 1, line))
-            if 'hub' in parser.key:
-                hub_list.append(Hub(
-                    hub_type=parser.key,
-                    name=parser.values[0],
-                    coordinates=(parser.values[1], parser.values[2]),
-                    line=nb + 1,
-                    color=parser.metadata.get('color', 'black'),
-                    zone=parser.metadata.get('zone', 'normal'),
-                    max_drones=parser.metadata.get('max_drones', 1),
-                    ))
-            if 'connection' in parser.key:
-                connection_list.append(Connection(
-                    first_zone=parser.values[0],
-                    second_zone=parser.values[1],
-                    max_link=parser.metadata.get('max_link_capacity', 1),
-                    line=nb + 1
-                ))
-            if 'nb_drone' in parser.key:
-                drone_list.append(Drone(number=parser.values[0], line=nb + 1))
-
-    return GlobalParser(hubs=hub_list,
-                        connections=connection_list,
-                        drone=drone_list)
-
-
-def parse_map():
     try:
-        read_map()
+        with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
+            for nb, line in enumerate(file.readlines()):
+
+                line = line[0:line.index("#") if '#' in line else -1]
+                if line == '\n' or line == '':
+                    continue
+
+                parser = LineParser(line=(nb + 1, line))
+                if 'hub' in parser.key:
+                    hub_list.append(Hub(
+                        hub_type=parser.key,
+                        name=parser.values[0],
+                        coordinates=(parser.values[1], parser.values[2]),
+                        line=nb + 1,
+                        color=parser.metadata.get('color', 'black'),
+                        zone=parser.metadata.get('zone', 'normal'),
+                        max_drones=parser.metadata.get('max_drones', 1),
+                        ))
+                if 'connection' in parser.key:
+                    connection_list.append(Connection(
+                        first_zone=parser.values[0],
+                        second_zone=parser.values[1],
+                        max_link=parser.metadata.get('max_link_capacity', 1),
+                        line=nb + 1
+                    ))
+                if 'nb_drone' in parser.key:
+                    drone_list.append(Drone(number=parser.values[0], line=nb + 1))
+
+        return GlobalParser(hubs=hub_list,
+                            connections=connection_list,
+                            drone=drone_list)
     except ValidationError as err:
         for e in err.errors():
-            print(e.get('msg'))
+            if e.get('type') != 'value_error':
+                print(f"(line {nb + 1}), {e.get('msg')}")
+            else:
+                print(e.get('msg').split(', ', maxsplit=1)[1])
         print('Please ensure format is "<key>: <value> ... <[metadata]>."\033[0m')
         sys.exit(0)
-    return
+
