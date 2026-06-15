@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/06/10 17:43:11 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/13 13:39:55 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/15 20:02:59 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -21,7 +21,7 @@ class Drone(BaseModel):
 class Connection(BaseModel):
     first_zone:  str = Field(max_length=30)
     second_zone: str = Field(max_length=30)
-    max_link:    int
+    max_link:    int = Field(ge=0)
     line:        int = Field(ge=0)
 
     @model_validator(mode='after')

@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/14 15:30:39 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/15 19:19:23 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -21,6 +21,7 @@ class Error(Enum):
     E1000 = "Duplicated name"
     E1001 = "No start_hub found. Please define one."
     E1002 = "Too many start_hub."
+    E1003 = "Duplicated coordinates"
 
     @classmethod
     def get_err(cls, code: str, line: Optional[int] = None):
@@ -41,6 +42,15 @@ class GlobalParser(BaseModel):
         for index, h in enumerate(hub_name):
             if h in hub_name[:index]:
                 raise ValueError(Error.get_err('E1000', hub_line[index]))
+        return self
+
+    @model_validator(mode='after')
+    def check_double_coord(self):
+        hub_line = [h.line for h in self.hubs]
+        hub_coord = [h.coordinates for h in self.hubs]
+        for index, h in enumerate(hub_coord):
+            if h in hub_coord[:index]:
+                raise ValueError(Error.get_err('E1003', hub_line[index]))
         return self
 
     @model_validator(mode='after')
@@ -222,4 +232,3 @@ def read_map() -> GlobalParser:
                 print(e.get('msg').split(', ', maxsplit=1)[1])
         print('Please ensure format is "<key>: <value> ... <[metadata]>."\033[0m')
         sys.exit(0)
-
