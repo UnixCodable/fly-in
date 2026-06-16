@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/16 09:45:11 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/16 12:20:48 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -22,6 +22,13 @@ class Error(Enum):
     E1001 = "No start_hub found. Please define one."
     E1002 = "Too many start_hub."
     E1003 = "Duplicated coordinates"
+    E1004 = "No end_hub found. Please define one."
+    E1005 = ""
+    E1006 = ""
+    E1007 = ""
+    E1008 = ""
+    E1009 = ""
+    E1010 = ""
 
     @classmethod
     def get_err(cls, code: str, line: Optional[int] = None):
@@ -59,14 +66,14 @@ class GlobalParser(BaseModel):
         if len(hub_line) == 0:
             raise ValueError(Error.get_err('E1001'))
         if len(hub_line) > 1:
-            raise ValueError(Error['E1002'].value)
+            raise ValueError(Error.get_err('E1002', hub_line[1:]))
         return self
 
     @model_validator(mode='after')
     def check_end(self):
         hub_line = [h.line for h in self.hubs if h.hub_type == 'end_hub']
         if len(hub_line) == 0:
-            raise ValueError("No end_hub found. Please define one.")
+            raise ValueError(Error.get_err('E1004'))
         if len(hub_line) > 1:
             raise ValueError(f"(line {hub_line[1:]}) Too many end_hub.")
         return self
@@ -87,6 +94,16 @@ class GlobalParser(BaseModel):
             if c.second_zone not in hub_name:
                 raise ValueError(f'(line {c.line}) : Unknown second zone')
 
+        return self
+
+    @model_validator(mode='after')
+    def check_linked(self):
+        zone_list = [(c.first_zone, c.second_zone) for c in self.connections]
+        for index, co in enumerate(self.connections):
+            if (co.first_zone, co.second_zone) in zone_list[:index]:
+                raise ValueError(f'(line {co.line}) : Already linked')
+            if (co.second_zone, co.first_zone) in zone_list[:index]:
+                raise ValueError(f'(line {co.line}) : Already linked')
         return self
 
     @model_validator(mode='after')
@@ -211,7 +228,6 @@ def read_map() -> GlobalParser:
                         zone=parser.metadata.get('zone', 'normal'),
                         max_drones=parser.metadata.get('max_drones', 1),
                         ))
-                    print(hub_list[-1].color)
                 if 'connection' in parser.key:
                     connection_list.append(Connection(
                         first_zone=parser.values[0],

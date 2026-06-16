@@ -6,11 +6,11 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/06/10 17:43:11 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/16 09:49:00 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/16 11:26:15 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 
 class Drone(BaseModel):
