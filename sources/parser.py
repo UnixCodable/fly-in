@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/16 12:20:48 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/16 21:22:45 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -18,23 +18,33 @@ import sys
 
 
 class Error(Enum):
-    E1000 = "Duplicated name"
-    E1001 = "No start_hub found. Please define one."
-    E1002 = "Too many start_hub."
-    E1003 = "Duplicated coordinates"
+    E1000 = "Duplicated name. Please define an other one."
+    E1001 = "No start_hub found. Please define it."
+    E1002 = "There must be only one start_hub. Please remove others."
+    E1003 = "Duplicated coordinates. Please define other ones."
     E1004 = "No end_hub found. Please define one."
-    E1005 = ""
-    E1006 = ""
-    E1007 = ""
-    E1008 = ""
-    E1009 = ""
-    E1010 = ""
+    E1005 = "There must be only one end_hub. Please remove others."
+    E1006 = "You cannot link between the same hub."
+    E1007 = "Unknown first zone. Please ensure it is part of the hub name."
+    E1008 = "Unknown second zone. Please ensure it is part of the hub name."
+    E1009 = "These zones are already linked."
+    E1010 = "No nb_drones found. Please define it."
+    E1011 = "There must be only one nb_drones. Please remove others."
+    E1012 = "Expected nb_drones at first line of the config file."
+    E1013 = "Separators issue. Can be duplicated ones or at line beginning."
+    E1014 = "Missing key, value or separator."
+    E1015 = "Invalid key. Ensure it is part of the authorized keys."
+    E1016 = "Too much values for nb_drones. It can only take number of drones."
+    E1017 = "Not enough values, please check hub format."
+    E1018 = "Not enough values, please check connection format."
+    E1019 = "Invalid metadata. Can be separators or format."
+    E1020 = "Too much values. Ensure metadata are in list : [<metadata>]."
 
     @classmethod
     def get_err(cls, code: str, line: Optional[int] = None):
         if line is None:
-            return Error[code].value
-        return f"(line {line}), {Error[code].value}"
+            return f"[ERROR] : {Error[code].value}"
+        return f"[ERROR] - (line {line}) : {Error[code].value}"
 
 
 class GlobalParser(BaseModel):
@@ -75,7 +85,7 @@ class GlobalParser(BaseModel):
         if len(hub_line) == 0:
             raise ValueError(Error.get_err('E1004'))
         if len(hub_line) > 1:
-            raise ValueError(f"(line {hub_line[1:]}) Too many end_hub.")
+            raise ValueError(Error.get_err('E1005', hub_line[1:]))
         return self
 
     @model_validator(mode='after')
@@ -86,13 +96,13 @@ class GlobalParser(BaseModel):
         for c in self.connections:
 
             if c.first_zone == c.second_zone:
-                raise ValueError(f'(line {c.line}) : Link between same hub')
+                raise ValueError(Error.get_err('E1006', c.line))
 
             if c.first_zone not in hub_name:
-                raise ValueError(f'(line {c.line}) : Unknown first zone')
+                raise ValueError(Error.get_err('E1007', c.line))
 
             if c.second_zone not in hub_name:
-                raise ValueError(f'(line {c.line}) : Unknown second zone')
+                raise ValueError(Error.get_err('E1008', c.line))
 
         return self
 
@@ -101,9 +111,9 @@ class GlobalParser(BaseModel):
         zone_list = [(c.first_zone, c.second_zone) for c in self.connections]
         for index, co in enumerate(self.connections):
             if (co.first_zone, co.second_zone) in zone_list[:index]:
-                raise ValueError(f'(line {co.line}) : Already linked')
+                raise ValueError(Error.get_err('E1009', co.line))
             if (co.second_zone, co.first_zone) in zone_list[:index]:
-                raise ValueError(f'(line {co.line}) : Already linked')
+                raise ValueError(Error.get_err('E1009', co.line))
         return self
 
     @model_validator(mode='after')
@@ -112,10 +122,10 @@ class GlobalParser(BaseModel):
         drone_line = [d.line for d in self.drone]
 
         if len(self.drone) == 0:
-            raise ValueError('No nb_drones found. Please define it.')
+            raise ValueError(Error.get_err('E1010'))
 
         if len(self.drone) > 1:
-            raise ValueError(f"(line {drone_line[1:]}) : Too many nb_drones.")
+            raise ValueError(Error.get_err('E1011', drone_line[1:]))
 
         return self
 
@@ -125,7 +135,7 @@ class GlobalParser(BaseModel):
                        + [c.line for c in self.connections]
                        + [self.drone[0].line])
         if self.drone[0].line != lines[0]:
-            raise ValueError(f'(line {self.drone[0].line}) : nb_drones must be at first line of the file')
+            raise ValueError(Error.get_err('E1012', self.drone[0].line))
         return self
 
 
@@ -140,68 +150,61 @@ class LineParser(BaseModel):
         string = self.line[1]
 
         if ' ' in string[0] or '  ' in string or '::' in string:
-            raise ValueError(f"(line {self.line[0]}) : Separators issue.")
+            raise ValueError(Error.get_err('E1013', self.line[0]))
         return self
 
     @model_validator(mode='after')
     def line_partition(self):
-        l_num = f'(line {self.line[0]}) : '
+        accepted = ('hub', 'start_hub', 'end_hub', 'connection', 'nb_drones')
 
         self.key, sep, val = self.line[1].partition(': ')
         if not self.key or not sep or not val:
-            raise ValueError(l_num + "Missing key, value or separator.")
-        if self.key not in ('hub', 'start_hub', 'end_hub', 'connection', 'nb_drones'):
-            raise ValueError(l_num + "Invalid key")
+            raise ValueError(Error.get_err('E1014', self.line[0]))
+        if self.key not in accepted:
+            raise ValueError(Error.get_err('E1015', self.line[0]))
 
         if 'nb_drones' in self.key:
             self.values = val.strip().split()
             if len(self.values) > 1:
-                raise ValueError(l_num + "Too much values for nb_drones.")
+                raise ValueError(Error.get_err('E1016', self.line[0]))
 
         if 'hub' in self.key:
             self.values = val.strip().split(maxsplit=3)
             if len(self.values) < 3:
-                raise ValueError(l_num + "Not enough values")
+                raise ValueError(Error.get_err('E1017', self.line[0]))
 
         if 'connection' in self.key:
             self.values = val.strip().split(maxsplit=1)
+            length = len(self.values)
             self.values[:1] = self.values[0].split('-', maxsplit=1)
-            if len(self.values) < 2:
-                raise ValueError(l_num + "Not enough values, check connection format.")
-
+            if len(self.values) < length + 1:
+                raise ValueError(Error.get_err('E1018', self.line[0]))
         return self
 
     @model_validator(mode='after')
     def metadata_partition(self):
         values = self.values
-        l_num = self.line[0]
 
         if 'hub' in self.key and len(values) == 4:
-            if values[3].startswith('[') and values[3].endswith(']'):
-                metadata = values[3][1:-1].split()
-                self.metadata = {}
-                for m in metadata:
-                    key, sep, val = m.partition('=')
-                    if not key or not sep or not val:
-                        raise ValueError(f'(line {l_num}) Invalid metadata.')
-                    if key not in ('color', 'zone', 'max_drones') or key in self.metadata.keys():
-                        raise ValueError(f'(line {l_num}) Invalid metadata.')
-                    self.metadata.update({key: val})
-            else:
-                raise ValueError(f'(line {l_num}) Too much values. Ensure metadata are in list.')
-        if 'connection' in self.key and len(values) == 3:
-            if values[2].startswith('[') and values[2].endswith(']'):
-                metadata = values[2][1:-1].split()
-                self.metadata = {}
-                for m in metadata:
-                    key, sep, val = m.partition('=')
-                    if not key or not sep or not val:
-                        raise ValueError(f'(line {l_num}) Invalid metadata.')
-                    if key not in ('max_link_capacity') or key in self.metadata.keys():
-                        raise ValueError(f'(line {l_num}) Invalid metadata.')
-                    self.metadata.update({key: val})
-            else:
-                raise ValueError(f'(line {l_num}) Too much values. Ensure metadata are in list.')
+            pos = 3
+            val_meta = ('color', 'zone', 'max_drones')
+        elif 'connection' in self.key and len(values) == 3:
+            pos = 2
+            val_meta = ('max_link_capacity')
+        else:
+            return self
+        if values[pos].startswith('[') and values[pos].endswith(']'):
+            metadata = values[pos][1:-1].split()
+            self.metadata = {}
+            for m in metadata:
+                key, sep, val = m.partition('=')
+                if not key or not sep or not val:
+                    raise ValueError(Error.get_err('E1019', self.line[0]))
+                if key not in val_meta or key in self.metadata.keys():
+                    raise ValueError(Error.get_err('E1019', self.line[0]))
+                self.metadata.update({key: val})
+        else:
+            raise ValueError(Error.get_err('E1020', self.line[0]))
         return self
 
 
@@ -236,16 +239,24 @@ def read_map() -> GlobalParser:
                         line=nb + 1
                     ))
                 if 'nb_drone' in parser.key:
-                    drone_list.append(Drone(number=parser.values[0], line=nb + 1))
+                    drone_list.append(Drone(number=parser.values[0],
+                                            line=nb + 1))
 
         return GlobalParser(hubs=hub_list,
                             connections=connection_list,
                             drone=drone_list)
     except ValidationError as err:
         for e in err.errors():
+            print(ANSII_RED)
             if e.get('type') != 'value_error':
-                print(f"(line {nb + 1}), {e.get('msg')}")
+                print(f"[ERROR] - (line {nb + 1}) : {e.get('msg')}")
             else:
                 print(e.get('msg').split(', ', maxsplit=1)[1])
-        print('Please ensure format is "<key>: <value> ... <[metadata]>."\033[0m')
+        print('Please ensure format is "<key>: <value> ... <[metadata]>."')
+        print(ANSII_NORMAL)
         sys.exit(0)
+
+
+# Constants
+ANSII_RED = "\033[1;31m"
+ANSII_NORMAL = "\033[0m"
