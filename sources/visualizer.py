@@ -1,17 +1,28 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                         :::      ::::::::   #
-#   main.py                                             :+:      :+:    :+:   #
+#   visualizer.py                                       :+:      :+:    :+:   #
 #                                                     +:+ +:+         +:+     #
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
-#   Created: 2026/06/02 10:40:23 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/17 00:11:30 by lbordana          ###   ########.fr       #
+#   Created: 2026/06/16 23:54:23 by lbordana           #+#    #+#             #
+#   Updated: 2026/06/17 00:23:08 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
-from parser import read_map
-from visualizer import start_vizualizer
+import pygame
+import moviepy.editor
 
-object = read_map()
-start_vizualizer()
+
+def start_vizualizer():
+    pygame.init()
+
+    screen = pygame.display.set_mode((1920, 1080))
+    pygame.display.set_caption("Fly-in : Echoes of the galaxy")
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+    pygame.quit()

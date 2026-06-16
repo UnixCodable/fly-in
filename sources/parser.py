@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/05/31 22:39:31 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/16 21:22:45 by lbordana          ###   ########.fr       #
+#   Updated: 2026/06/16 23:53:04 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -24,7 +24,7 @@ class Error(Enum):
     E1003 = "Duplicated coordinates. Please define other ones."
     E1004 = "No end_hub found. Please define one."
     E1005 = "There must be only one end_hub. Please remove others."
-    E1006 = "You cannot link between the same hub."
+    E1006 = "You cannot link between two same hub."
     E1007 = "Unknown first zone. Please ensure it is part of the hub name."
     E1008 = "Unknown second zone. Please ensure it is part of the hub name."
     E1009 = "These zones are already linked."
