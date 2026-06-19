@@ -83,7 +83,7 @@ class Menu(View):
 
 class Controller():
     window = WindowManager()
-    intro = Cinematics(window, Video("assets/cinematics/intro2.mp4"))
+    intro = Cinematics(window, Video("assets/cinematics/intro.mp4"))
     menu = Menu(window)
 
     def __init__(self):
