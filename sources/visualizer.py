@@ -24,11 +24,7 @@ class WindowManager():
     running = True
 
     def __init__(self):
-        self.__surface = pygame.display.set_mode((self.size_w, self.size_h))
-
-    @classmethod
-    def _set_running(cls, boolean):
-        cls.running = boolean
+        self.surface = pygame.display.set_mode((self.size_w, self.size_h))
 
 
 class View(ABC):
@@ -43,50 +39,58 @@ class View(ABC):
 
 class Cinematics(View):
 
-    def __init__(self, video):
-        self.video = video
-        self.intro.resize((self.size_w, self.size_h))
+    def __init__(self, window: WindowManager, video):
+        self.window: WindowManager = window
+        self.video: Video = video
+        self.video.resize((self.window.size_w, self.window.size_h))
 
     def _get_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running = False
+                self.window.running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    print(self.video.frame)
+
 
     def _launch(self):
-        while self.running:
+        while self.window.running:
             self._get_events()
-            self.intro.update()
-            if self.intro.draw(self.surface, (0, 0)) is True:
+            if self.video.draw(self.window.surface, (0, 0)) is True:
                 pygame.display.update()
                 break
-        while self.running:
+        while self.window.running:
             self._get_events()
-            self.intro.update()
-            if self.intro.draw(self.surface, (0, 0)) is False:
+            if self.video.draw(self.window.surface, (0, 0)) is False:
                 break
             pygame.display.update()
 
 
 class Menu(View):
+
+    def __init__(self, window: WindowManager):
+        self.window: WindowManager = window
+
     def _get_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running = False
+                self.window.running = False
 
     def _launch(self):
-        while self.running:
+        while self.window.running:
             self._get_events()
 
 
 class Controller():
-    intro = Cinematics(Video("assets/cinematics/intro.mp4"))
+    window = WindowManager()
+    intro = Cinematics(window, Video("assets/cinematics/intro2.mp4"))
+    menu = Menu(window)
 
-    def __init__(self, window: WindowManager):
-        self.window = window
-        self.intro._launch_intro()
+    def __init__(self):
+        self.intro._launch()
+        self.menu._launch()
 
 
 def start_vizualizer():
-    window = WindowManager()
-    Controller(window)
+    Controller()
     pygame.quit()
