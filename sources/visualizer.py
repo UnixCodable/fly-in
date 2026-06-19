@@ -52,7 +52,6 @@ class Cinematics(View):
                 if event.key == pygame.K_ESCAPE:
                     print(self.video.frame)
 
-
     def _launch(self):
         while self.window.running:
             self._get_events()

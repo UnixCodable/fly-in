@@ -21,7 +21,7 @@ class Drone(BaseModel):
 class Connection(BaseModel):
     first_zone:  str = Field(max_length=30, pattern=r"^([a-zA-Z0-9_]+)$")
     second_zone: str = Field(max_length=30, pattern=r"^([a-zA-Z0-9_]+)$")
-    max_link:    int = Field(ge=0)
+    max_link:    int = Field(gt=0)
     line:        int = Field(ge=0)
 
 
@@ -31,5 +31,5 @@ class Hub(BaseModel):
     coordinates: tuple[int, int]
     color:       str = Field(pattern=r"^([a-zA-Z]+)$")
     zone:        str = Field(pattern=r"(restricted|priority|normal|blocked)")
-    max_drones:  int = Field(ge=0)
+    max_drones:  int = Field(gt=0)
     line: int = Field(ge=0)
