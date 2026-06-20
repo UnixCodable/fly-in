@@ -12,7 +12,6 @@
 
 import pygame
 from pyvidplayer2 import Video
-from abc import ABC, abstractmethod
 
 pygame.init()
 pygame.display.set_caption("Fly-in : Echoes of the galaxy")
@@ -27,62 +26,12 @@ class WindowManager():
         self.surface = pygame.display.set_mode((self.size_w, self.size_h))
 
 
-class View(ABC):
-    @abstractmethod
-    def _get_events(self):
-        pass
-
-    @abstractmethod
-    def _launch(self):
-        pass
-
-
-class Cinematics(View):
-
-    def __init__(self, window: WindowManager, video):
-        self.window: WindowManager = window
-        self.video: Video = video
-        self.video.resize((self.window.size_w, self.window.size_h))
-
-    def _get_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.window.running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    print(self.video.frame)
-
-    def _launch(self):
-        while self.window.running:
-            self._get_events()
-            if self.video.draw(self.window.surface, (0, 0)) is True:
-                pygame.display.update()
-                break
-        while self.window.running:
-            self._get_events()
-            if self.video.draw(self.window.surface, (0, 0)) is False:
-                break
-            pygame.display.update()
-
-
-class Menu(View):
-
-    def __init__(self, window: WindowManager):
-        self.window: WindowManager = window
-
-    def _get_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.window.running = False
-
-    def _launch(self):
-        while self.window.running:
-            self._get_events()
-
-
 class Controller():
+
+    from .components.gui_objects import Cinematics, Menu
+
     window = WindowManager()
-    intro = Cinematics(window, Video("assets/cinematics/intro.mp4"))
+    intro = Cinematics(window, Video("assets/cinematics/intro.mp4"), 1.5, 130, 5600)
     menu = Menu(window)
 
     def __init__(self):

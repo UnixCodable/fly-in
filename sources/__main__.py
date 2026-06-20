@@ -10,8 +10,8 @@
 #                                                                             #
 # *************************************************************************** #
 
-from parser import read_map
-from visualizer import start_vizualizer
+from .parser import read_map
+from .visualizer import start_vizualizer
 
 object = read_map()
 start_vizualizer()

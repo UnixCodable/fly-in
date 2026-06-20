@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/02 08:09:16 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/05 11:34:02 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/20 14:35:40 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -14,7 +14,7 @@ install:
 	uv sync
 
 run:
-	uv run sources/main.py
+	uv run python3 -m sources
 
 debug:
 	echo "wip"

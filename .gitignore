@@ -1,3 +1,4 @@
 en.subject.pdf
 /.venv
-/sources/__pycache__
+*/__pycache__
+*/*/__pycache__
