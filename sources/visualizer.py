@@ -31,7 +31,7 @@ class Controller():
     from .components.gui_objects import Cinematics, Menu
 
     window = WindowManager()
-    intro = Cinematics(window, Video("assets/cinematics/intro.mp4"), 1.5, 130, 5600)
+    intro = Cinematics(window, Video("assets/cinematics/intro.mp4"), 1.2, 130, 5600)
     menu = Menu(window)
 
     def __init__(self):
