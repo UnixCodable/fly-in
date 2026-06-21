@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/20 13:20:13 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/20 17:52:50 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/22 01:09:06 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -37,12 +37,12 @@ class Cinematics(View):
                  end_frame: Optional[int] = None):
         self.window: WindowManager = window
         self.video: Video = video
-        self.video.resize((self.window.size_w, self.window.size_h))
         self.video.set_speed(speed)
         self.video.seek_frame(begin_frame)
         self.end_frame = end_frame if end_frame else self.video.frame_count
 
     def _get_events(self):
+        self.video.resize((int(pygame.display.get_window_size()[1] * (16/9)), pygame.display.get_window_size()[1]))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.window.running = False
@@ -52,9 +52,11 @@ class Cinematics(View):
                     self.video.seek_frame(self.end_frame - 2)
 
     def _launch(self):
+        draw_pos = (0, 0)
         while self.window.running:
             self._get_events()
-            self.video.draw(self.window.surface, (0, 0))
+            draw_pos = (int((pygame.display.get_window_size()[0] - int(pygame.display.get_window_size()[1] * (16/9))) / 2), 0)
+            self.video.draw(self.window.surface, draw_pos)
             if self.video.frame >= self.end_frame:
                 break
             pygame.display.update()

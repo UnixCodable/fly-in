@@ -18,12 +18,12 @@ pygame.display.set_caption("Fly-in : Echoes of the galaxy")
 
 
 class WindowManager():
-    size_w = pygame.display.Info().current_w
+    size_w = int(pygame.display.Info().current_h * (16/9))
     size_h = pygame.display.Info().current_h
     running = True
 
     def __init__(self):
-        self.surface = pygame.display.set_mode((self.size_w, self.size_h))
+        self.surface = pygame.display.set_mode((self.size_w, self.size_h), pygame.RESIZABLE)
 
 
 class Controller():
@@ -31,7 +31,7 @@ class Controller():
     from .components.gui_objects import Cinematics, Menu
 
     window = WindowManager()
-    intro = Cinematics(window, Video("assets/cinematics/intro.mp4"), 1.2, 130, 5600)
+    intro = Cinematics(window, Video("assets/cinematics/intro.mp4"))
     menu = Menu(window)
 
     def __init__(self):
