@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/20 13:20:13 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/22 01:09:06 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/23 01:29:57 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -15,6 +15,14 @@ from typing import Optional
 from pyvidplayer2 import Video
 from ..visualizer import WindowManager
 import pygame
+
+
+class MenuButton():
+    def __init__(self, window: WindowManager, posx, posy, width, height):
+        self.shape = pygame.Rect(posx, posy, width, height)
+        self.window = window
+        color = pygame.Color(255, 34, 67)
+        pygame.draw.rect(self.window.surface, color, )
 
 
 class View(ABC):
@@ -42,7 +50,8 @@ class Cinematics(View):
         self.end_frame = end_frame if end_frame else self.video.frame_count
 
     def _get_events(self):
-        self.video.resize((int(pygame.display.get_window_size()[1] * (16/9)), pygame.display.get_window_size()[1]))
+        self.video.resize((int(pygame.display.get_window_size()[1] * (16/9)),
+                           pygame.display.get_window_size()[1]))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.window.running = False
@@ -54,8 +63,10 @@ class Cinematics(View):
     def _launch(self):
         draw_pos = (0, 0)
         while self.window.running:
+            self.window.surface.fill("#000000")
             self._get_events()
-            draw_pos = (int((pygame.display.get_window_size()[0] - int(pygame.display.get_window_size()[1] * (16/9))) / 2), 0)
+            draw_pos = (int((pygame.display.get_window_size()[0] -
+                        int(pygame.display.get_window_size()[1] * (16/9))) / 2), 0)
             self.video.draw(self.window.surface, draw_pos)
             if self.video.frame >= self.end_frame:
                 break
