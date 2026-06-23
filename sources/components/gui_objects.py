@@ -1,14 +1,14 @@
-# ************************************************************************* #
-#                                                                           #
-#                                                      :::      ::::::::    #
-#  gui_objects.py                                    :+:      :+:    :+:    #
-#                                                  +:+ +:+         +:+      #
-#  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
-#                                              +#+#+#+#+#+   +#+            #
-#  Created: 2026/06/20 13:20:13 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/24 00:57:01 by lbordana        ###   ########.fr        #
-#                                                                           #
-# ************************************************************************* #
+# *************************************************************************** #
+#                                                                             #
+#                                                         :::      ::::::::   #
+#   gui_objects.py                                      :+:      :+:    :+:   #
+#                                                     +:+ +:+         +:+     #
+#   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
+#                                                 +#+#+#+#+#+   +#+           #
+#   Created: 2026/06/20 13:20:13 by lbordana           #+#    #+#             #
+#   Updated: 2026/06/24 01:28:49 by lbordana          ###   ########.fr       #
+#                                                                             #
+# *************************************************************************** #
 
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -64,6 +64,8 @@ class Cinematics(View):
                 if event.key == pygame.K_ESCAPE:
                     self.video.set_speed(1)
                     self.video.seek_frame(self.end_frame - 2)
+                if event.key == pygame.K_a:
+                    pygame.transform.scale(SURFACE, (1920, 1080))
 
     def _launch(self):
         draw_pos = (0, 0)
@@ -84,6 +86,9 @@ class Menu(View):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    pygame.transform.scale(SURFACE, (1920, 1080))
 
     def _launch(self):
         MenuButton(100, 100, 200, 100, 6, 10)
