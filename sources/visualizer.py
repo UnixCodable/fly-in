@@ -15,24 +15,19 @@ from pyvidplayer2 import Video
 
 pygame.init()
 pygame.display.set_caption("Fly-in : Echoes of the galaxy")
-
-
-class WindowManager():
-    size_w = int(pygame.display.Info().current_h * (16/9))
-    size_h = pygame.display.Info().current_h
-    running = True
-
-    def __init__(self):
-        self.surface = pygame.display.set_mode((self.size_w, self.size_h), pygame.RESIZABLE)
+SCREEN_W = int(pygame.display.Info().current_h * (16/9))
+SCREEN_H = pygame.display.Info().current_h
+SURFACE = pygame.display.set_mode((SCREEN_W, SCREEN_H), pygame.RESIZABLE)
+DIFFERENCE_H = SCREEN_H - SURFACE.get_height()
+DIFFERENCE_W = SCREEN_W - SURFACE.get_width()
 
 
 class Controller():
 
     from .components.gui_objects import Cinematics, Menu
 
-    window = WindowManager()
-    intro = Cinematics(window, Video("assets/cinematics/intro.mp4"))
-    menu = Menu(window)
+    intro = Cinematics(Video("assets/cinematics/intro.mp4"))
+    menu = Menu()
 
     def __init__(self):
         self.intro._launch()
