@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/20 13:20:13 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/23 14:32:59 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/23 15:05:18 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -18,11 +18,11 @@ import pygame
 
 
 class MenuButton():
-    def __init__(self, window: WindowManager, posx, posy, width, height):
+    def __init__(self, window: WindowManager, posx, posy, width, height, border : int = 0, radius : int = -1):
         self.shape = pygame.Rect(posx, posy, width, height)
         self.window = window
-        color = pygame.Color(255, 34, 67)
-        pygame.draw.rect(self.window.surface, color, self.shape)
+        color = pygame.Color(255, 255, 255)
+        pygame.draw.rect(self.window.surface, color, self.shape, border, radius)
 
 
 class View(ABC):
@@ -68,9 +68,9 @@ class Cinematics(View):
             draw_pos = (int((pygame.display.get_window_size()[0] -
                         int(pygame.display.get_window_size()[1] * (16/9))) / 2), 0)
             self.video.draw(self.window.surface, draw_pos)
-            if self.video.frame == self.end_frame:
-                break
             pygame.display.update()
+            if self.video.frame == (self.end_frame - 1):
+                break
 
 
 class Menu(View):
@@ -84,6 +84,7 @@ class Menu(View):
                 self.window.running = False
 
     def _launch(self):
-        MenuButton(self.window, 100, 100, 200, 100)
+        MenuButton(self.window, 100, 100, 200, 100, 6, 10)
         while self.window.running:
             self._get_events()
+            pygame.display.update()
