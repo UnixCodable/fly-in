@@ -13,5 +13,6 @@
 from .parser import read_map
 from .visualizer import start_vizualizer
 
-object = read_map()
-start_vizualizer()
+if __name__ == "__main__":
+    object = read_map()
+    start_vizualizer()

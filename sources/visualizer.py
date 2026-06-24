@@ -12,14 +12,16 @@
 
 import pygame
 from pyvidplayer2 import Video
+from .settings import get_settings
 
 pygame.init()
 pygame.display.set_caption("Fly-in : Echoes of the galaxy")
-SCREEN_W = int(pygame.display.Info().current_h * (16/9))
-SCREEN_H = pygame.display.Info().current_h
-SURFACE = pygame.display.set_mode((SCREEN_W, SCREEN_H), pygame.RESIZABLE)
-DIFFERENCE_H = SCREEN_H - SURFACE.get_height()
-DIFFERENCE_W = SCREEN_W - SURFACE.get_width()
+
+# Constants
+SETTINGS = get_settings()
+SCREEN_W = SETTINGS["resolution"][0]
+SCREEN_H = SETTINGS["resolution"][1]
+SURFACE = pygame.display.set_mode((SCREEN_W, SCREEN_H))
 
 
 class Controller():

@@ -13,7 +13,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 from pyvidplayer2 import Video
-from ..visualizer import SURFACE, DIFFERENCE_H, DIFFERENCE_W
+from sources.visualizer import SURFACE
 import sys
 import pygame
 
@@ -40,6 +40,10 @@ class View(ABC):
     def _launch(self):
         pass
 
+    def __draw_pos__(self) -> tuple[int, int]:
+        return (int((SURFACE.get_width() -
+                int(SURFACE.get_height() * (16/9))) / 2), 0)
+
 
 class Cinematics(View):
 
@@ -54,12 +58,11 @@ class Cinematics(View):
         self.end_frame = end_frame if end_frame else self.video.frame_count
 
     def _get_events(self):
-        self.video.resize((int(SURFACE.get_height() * (16/9)),
-                           pygame.display.get_window_size()[1]))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self.video.stop()
                 pygame.quit()
-                sys.exit()
+                sys.exit(0)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.video.set_speed(1)
@@ -72,8 +75,7 @@ class Cinematics(View):
         while True:
             SURFACE.fill("#000000")
             self._get_events()
-            draw_pos = (int((pygame.display.get_window_size()[0] -
-                        int(pygame.display.get_window_size()[1] * (16/9))) / 2), 0)
+            draw_pos = self.__draw_pos__()
             self.video.draw(SURFACE, draw_pos)
             pygame.display.update()
             if self.video.frame == (self.end_frame - 1):
