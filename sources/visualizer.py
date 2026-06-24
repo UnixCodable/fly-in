@@ -23,7 +23,10 @@ class Window():
         self.settings = Settings()
         self.data = self.settings._get_settings()
         self.width, self.height = self.data["resolution"]
-        self.surface = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        if self.data["mode"] == "fullscreen":
+            self.surface = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
+        else:
+            self.surface = pygame.display.set_mode((self.width, self.height))
         self.primary_font = pygame.Font("assets/fonts/Starjhol.ttf")
 
     def _rewrite(self, new_config: dict):
@@ -32,12 +35,10 @@ class Window():
         self.width, self.height = self.data["resolution"]
         if self.data["mode"] == "fullscreen":
             self.surface = pygame.display.set_mode(
-                (self.width, self.height),
-                pygame.RESIZABLE | pygame.NOFRAME)
+                (self.width, self.height), pygame.FULLSCREEN)
         else:
             self.surface = pygame.display.set_mode(
-                (self.width, self.height),
-                pygame.RESIZABLE)
+                (self.width, self.height))
 
 
 class Controller():
@@ -45,12 +46,17 @@ class Controller():
     from .components.gui_objects import Cinematics, Menu
 
     window = Window()
-    intro = Cinematics(Video("assets/cinematics/intro.mp4"), window)
+    lucasfilm = Cinematics(Video("assets/cinematics/lucasfilm.mp4"),
+                           window, end_frame=200)
+    intro = Cinematics(Video("assets/cinematics/intro.mp4"),
+                       window, speed=0.9)
     menu = Menu(window)
 
     def __init__(self):
+        self.lucasfilm._launch()
         self.intro._launch()
-        self.menu._launch()
+        while True:
+            self.menu._launch()
 
 
 def start_vizualizer():
