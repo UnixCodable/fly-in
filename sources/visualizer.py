@@ -55,6 +55,7 @@ class Controller():
     def __init__(self):
         self.lucasfilm._launch()
         self.intro._launch()
+        page = self.menu._launch()
         while True:
             self.menu._launch()
 

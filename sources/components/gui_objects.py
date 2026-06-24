@@ -75,7 +75,7 @@ class View(ABC):
         pass
 
     @abstractmethod
-    def _launch(self):
+    def _launch(self) -> int:
         pass
 
     def _render_image(self, path: str, coord: tuple[int, int] = (0, 0)):
@@ -112,7 +112,7 @@ class Cinematics(View):
                     else:
                         self.video.seek_frame(self.video.frame_count - 2)
 
-    def _launch(self):
+    def _launch(self) -> int:
         self.video.resize(self.window.surface.get_size())
         while True:
             if self.video.frame == self.end_frame:
@@ -121,6 +121,7 @@ class Cinematics(View):
             self.video.draw(self.window.surface, (0, 0))
             pygame.display.update()
         self.video.stop()
+        return 0
 
 
 class Menu(View):
