@@ -17,19 +17,26 @@ from .settings import get_settings
 pygame.init()
 pygame.display.set_caption("Fly-in : Echoes of the galaxy")
 
-# Constants
-SETTINGS = get_settings()
-SCREEN_W = SETTINGS["resolution"][0]
-SCREEN_H = SETTINGS["resolution"][1]
-SURFACE = pygame.display.set_mode((SCREEN_W, SCREEN_H))
+
+class Window():
+    def __init__(self):
+        self.settings = get_settings()
+        self.width, self.height = self.settings["resolution"]
+        self.surface = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
+
+    def _resize(self, dimensions: tuple[int, int]):
+        self.settings = get_settings()
+        self.width, self.height = self.settings["resolution"]
+        self.surface = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
 
 
 class Controller():
 
     from .components.gui_objects import Cinematics, Menu
 
-    intro = Cinematics(Video("assets/cinematics/intro.mp4"))
-    menu = Menu()
+    window = Window()
+    intro = Cinematics(Video("assets/cinematics/intro.mp4"), window)
+    menu = Menu(window)
 
     def __init__(self):
         self.intro._launch()

@@ -13,25 +13,28 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 from pyvidplayer2 import Video
-from sources.visualizer import SURFACE
+from sources.visualizer import Window
 import sys
 import pygame
 
 
 class MenuButton():
     def __init__(self,
-                 pos_x: int,
-                 pos_y: int,
-                 width: int,
-                 height: int,
+                 window: Window,
+                 pos: tuple[int, int],
+                 dimensions: tuple[int, int],
                  border: int = 0,
                  radius: int = -1):
-        self.shape = pygame.Rect(pos_x, pos_y, width, height)
+        self.window = window
+        self.shape = pygame.Rect(pos, dimensions)
         color = pygame.Color(255, 255, 255)
-        pygame.draw.rect(SURFACE, color, self.shape, border, radius)
+        pygame.draw.rect(self.window.surface, color, self.shape, border, radius)
 
 
 class View(ABC):
+    def __init__(self, window: Window):
+        self.window = window
+
     @abstractmethod
     def _get_events(self):
         pass
@@ -40,18 +43,20 @@ class View(ABC):
     def _launch(self):
         pass
 
-    def __draw_pos__(self) -> tuple[int, int]:
-        return (int((SURFACE.get_width() -
-                int(SURFACE.get_height() * (16/9))) / 2), 0)
-
+    def _draw_pos(self, pos_x: int, pos_y: int) -> tuple[int, int]:
+        return (int((self.window.surface.get_width()
+                - int(self.window.surface.get_height() * (16/9))) / 2) + pos_x,
+                0 + pos_y)
 
 class Cinematics(View):
 
     def __init__(self,
                  video: Video,
+                 window: Window,
                  speed: float = 1,
                  begin_frame: int = 1,
                  end_frame: Optional[int] = None):
+        super().__init__(window)
         self.video: Video = video
         self.video.set_speed(speed)
         self.video.seek_frame(begin_frame)
@@ -68,21 +73,22 @@ class Cinematics(View):
                     self.video.set_speed(1)
                     self.video.seek_frame(self.end_frame - 2)
                 if event.key == pygame.K_a:
-                    pygame.transform.scale(SURFACE, (1920, 1080))
+                    pygame.transform.scale(self.window.surface, (1920, 1080))
 
     def _launch(self):
-        draw_pos = (0, 0)
         while True:
-            SURFACE.fill("#000000")
+            self.window.surface.fill("#000000")
             self._get_events()
-            draw_pos = self.__draw_pos__()
-            self.video.draw(SURFACE, draw_pos)
+            self.video.draw(self.window.surface, self._draw_pos(0, 0))
             pygame.display.update()
             if self.video.frame == (self.end_frame - 1):
                 break
 
 
 class Menu(View):
+    def __init__(self, window: Window):
+        super().__init__(window)
+
     def _get_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -90,10 +96,10 @@ class Menu(View):
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
-                    pygame.transform.scale(SURFACE, (1920, 1080))
+                    pygame.transform.scale(self.window.surface, (1920, 1080))
 
     def _launch(self):
-        MenuButton(100, 100, 200, 100, 6, 10)
+        MenuButton(self.window, self._draw_pos(100, 100), (200, 100), 6, 10)
         while True:
             self._get_events()
             pygame.display.update()
