@@ -42,10 +42,6 @@ class View(ABC):
     def _launch(self):
         pass
 
-    def _draw_pos(self, pos_x: int, pos_y: int) -> tuple[int, int]:
-        return (int((self.window.surface.get_width()
-                - int(self.window.surface.get_height() * (16/9))) / 2) + pos_x,
-                0 + pos_y)
 
 class Cinematics(View):
 
@@ -71,14 +67,12 @@ class Cinematics(View):
                 if event.key == pygame.K_ESCAPE:
                     self.video.set_speed(1)
                     self.video.seek_frame(self.end_frame - 2)
-                if event.key == pygame.K_a:
-                    pygame.transform.scale(self.window.surface, (1920, 1080))
 
     def _launch(self):
         while True:
             self.window.surface.fill("#000000")
             self._get_events()
-            self.video.draw(self.window.surface, self._draw_pos(0, 0))
+            self.video.draw(self.window.surface, (0, 0))
             pygame.display.update()
             if self.video.frame == (self.end_frame - 1):
                 break
@@ -93,12 +87,9 @@ class Menu(View):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    pygame.transform.scale(self.window.surface, (1920, 1080))
 
     def _launch(self):
-        MenuButton(self.window, self._draw_pos(100, 100), (200, 100), 6, 10)
         while True:
+            MenuButton(self.window, (100, 100), (200, 100), 6, 10)
             self._get_events()
             pygame.display.update()

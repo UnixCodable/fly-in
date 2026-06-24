@@ -12,7 +12,7 @@
 
 import pygame
 from pyvidplayer2 import Video
-from .settings import get_settings
+from .settings import Settings
 
 pygame.init()
 pygame.display.set_caption("Fly-in : Echoes of the galaxy")
@@ -20,14 +20,24 @@ pygame.display.set_caption("Fly-in : Echoes of the galaxy")
 
 class Window():
     def __init__(self):
-        self.settings = get_settings()
-        self.width, self.height = self.settings["resolution"]
-        self.surface = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
-
-    def _resize(self, dimensions: tuple[int, int]):
-        self.settings = get_settings()
-        self.width, self.height = self.settings["resolution"]
+        self.settings = Settings()
+        self.data = self.settings._get_settings()
+        self.width, self.height = self.data["resolution"]
         self.surface = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        self.font = pygame.Font()
+
+    def _rewrite(self, new_config: dict):
+        self.settings._set_settings(new_config)
+        self.data = self.settings._get_settings()
+        self.width, self.height = self.data["resolution"]
+        if self.data["mode"] == "fullscreen":
+            self.surface = pygame.display.set_mode(
+                (self.width, self.height),
+                pygame.RESIZABLE | pygame.NOFRAME)
+        else:
+            self.surface = pygame.display.set_mode(
+                (self.width, self.height),
+                pygame.RESIZABLE)
 
 
 class Controller():
