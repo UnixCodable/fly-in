@@ -26,12 +26,27 @@ class MenuButton():
                  tag: str,
                  border: int = 0,
                  radius: int = -1):
-        menu_font = pygame.Font("assets/fonts/Oswald.ttf", 70)
-        self.shape = pygame.Rect(pos, dimensions)
-        color = pygame.Color(255, 255, 255)
-        pygame.draw.rect(window.surface, color, self.shape, border, radius)
-        text = pygame.Font.render(menu_font, tag, True, (255, 255, 255))
-        window.surface.blit(text, ((pos[0], pos[1]), (dimensions[0], dimensions[1])))
+        self.font = pygame.Font("assets/fonts/Oswald.ttf", 110)
+        self.rect = pygame.Rect(pos, dimensions)
+        self.pos = pos
+        self.window = window
+        self.tag = tag
+        self.border = border
+        self.radius = radius
+        self.color_inactive = pygame.Color(255, 255, 255)
+        self.color_hover = pygame.Color(255, 255, 255)
+
+    def _render(self):
+        pygame.draw.rect(self.window.surface,
+                         self.color_inactive,
+                         self.rect,
+                         self.border,
+                         self.radius)
+        text = pygame.Font.render(self.font, self.tag, True, (255, 255, 255))
+        center_text = ((self.rect.width - text.get_width()) / 2,
+                       (self.rect.height - text.get_height()) / 2)
+        self.window.surface.blit(text, (self.pos[0] + center_text[0],
+                                        self.pos[1] + center_text[1]))
 
 
 class View(ABC):
@@ -99,9 +114,23 @@ class Menu(View):
                         self.window._rewrite({"mode": "fullscreen"})
 
     def _launch(self):
+        play_button = MenuButton(self.window,
+                                 (int(self.window.width * 0.2),
+                                  int(self.window.height * 0.33)),
+                                 (400, 200), "Play", 6, 10)
+        settings_button = MenuButton(self.window,
+                                     (int(self.window.width * 0.2),
+                                      int(self.window.height * 0.45)),
+                                     (400, 200), "Settings", 6, 10)
+        exit_button = MenuButton(self.window,
+                                 (int(self.window.width * 0.2),
+                                  int(self.window.height * 0.57)),
+                                 (400, 200), "Exit", 6, 10)
         while True:
             image = pygame.image.load("assets/gui/background.png")
             self.window.surface.blit(image)
-            MenuButton(self.window, (100, 100), (200, 100), "Play", 6, 10)
+            play_button._render()
+            settings_button._render()
+            exit_button._render()
             self._get_events()
             pygame.display.update()
