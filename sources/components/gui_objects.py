@@ -25,10 +25,9 @@ class MenuButton():
                  dimensions: tuple[int, int],
                  border: int = 0,
                  radius: int = -1):
-        self.window = window
         self.shape = pygame.Rect(pos, dimensions)
         color = pygame.Color(255, 255, 255)
-        pygame.draw.rect(self.window.surface, color, self.shape, border, radius)
+        pygame.draw.rect(window.surface, color, self.shape, border, radius)
 
 
 class View(ABC):
