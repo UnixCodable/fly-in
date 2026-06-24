@@ -23,11 +23,15 @@ class MenuButton():
                  window: Window,
                  pos: tuple[int, int],
                  dimensions: tuple[int, int],
+                 tag: str,
                  border: int = 0,
                  radius: int = -1):
+        menu_font = pygame.Font("assets/fonts/Oswald.ttf", 70)
         self.shape = pygame.Rect(pos, dimensions)
         color = pygame.Color(255, 255, 255)
         pygame.draw.rect(window.surface, color, self.shape, border, radius)
+        text = pygame.Font.render(menu_font, tag, True, (255, 255, 255))
+        window.surface.blit(text, ((pos[0], pos[1]), (dimensions[0], dimensions[1])))
 
 
 class View(ABC):
@@ -70,12 +74,12 @@ class Cinematics(View):
 
     def _launch(self):
         while True:
+            if self.video.frame == 0:
+                break
             self.window.surface.fill("#000000")
             self._get_events()
             self.video.draw(self.window.surface, (0, 0))
             pygame.display.update()
-            if self.video.frame == (self.end_frame - 1):
-                break
 
 
 class Menu(View):
@@ -87,9 +91,17 @@ class Menu(View):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_f:
+                    if self.window.data["mode"] == "fullscreen":
+                        self.window._rewrite({"mode": "windowed"})
+                    elif self.window.data["mode"] == "windowed":
+                        self.window._rewrite({"mode": "fullscreen"})
 
     def _launch(self):
         while True:
-            MenuButton(self.window, (100, 100), (200, 100), 6, 10)
+            image = pygame.image.load("assets/gui/background.png")
+            self.window.surface.blit(image)
+            MenuButton(self.window, (100, 100), (200, 100), "Play", 6, 10)
             self._get_events()
             pygame.display.update()

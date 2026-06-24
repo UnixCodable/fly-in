@@ -24,7 +24,7 @@ class Window():
         self.data = self.settings._get_settings()
         self.width, self.height = self.data["resolution"]
         self.surface = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
-        self.font = pygame.Font()
+        self.primary_font = pygame.Font("assets/fonts/Starjhol.ttf")
 
     def _rewrite(self, new_config: dict):
         self.settings._set_settings(new_config)
