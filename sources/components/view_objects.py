@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/25 10:12:28 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/25 13:25:45 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from pyvidplayer2 import Video
 from sources.visualizer import Window
-from sources.components.gui_objects import MenuButton
+from sources.components.gui_objects import Action, MenuButton
 import sys
 import pygame
 
@@ -100,15 +100,16 @@ class MenuView(View):
         play_button = MenuButton(self.window,
                                  (int(self.window.width * 0.2),
                                   int(self.window.height * 0.33)),
-                                 (450, 200), "Play", 1, 6, 10)
+                                 (450, 200),
+                                 "Play", Action.MAP_SELECTION, 6, 10)
         settings_button = MenuButton(self.window,
                                      (int(self.window.width * 0.2),
                                       int(self.window.height * 0.45)),
-                                     (450, 200), "Settings", 2, 6, 10)
+                                     (450, 200), "Settings", Action.SETTINGS, 6, 10)
         exit_button = MenuButton(self.window,
                                  (int(self.window.width * 0.2),
                                   int(self.window.height * 0.57)),
-                                 (450, 200), "Exit", 3, 6, 10)
+                                 (450, 200), "Exit", Action.EXIT, 6, 10)
         while True:
             self._render_image("assets/gui/background.png")
             play_button._render()

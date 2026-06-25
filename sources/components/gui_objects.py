@@ -12,7 +12,16 @@
 
 from abc import ABC, abstractmethod
 from sources.visualizer import Window
+from enum import Enum
 import pygame
+
+
+class Action(Enum):
+    MENU = pygame.event.custom_type()
+    MAP_SELECTION = pygame.event.custom_type()
+    GAME = pygame.event.custom_type()
+    SETTINGS = pygame.event.custom_type()
+    EXIT = pygame.event.custom_type()
 
 
 class Button(ABC):
@@ -75,7 +84,7 @@ class MenuButton(Button):
             pygame.Surface.fill(self.surface, self.color_hover, self.rect, pygame.BLEND_MIN)
             pygame.Surface.fill(self.text, self.color_hover, special_flags=pygame.BLEND_MIN | pygame.BLEND_MULT)
             if pygame.MOUSEBUTTONUP in [event.type for event in pygame.event.get()]:
-                print(self.action)
+                pygame.event.post(self.action)
 
         elif self.clickable is True:
             self.clickable = False
