@@ -43,21 +43,28 @@ class Window():
 
 class Controller():
 
-    from .components.gui_objects import Cinematics, Menu
+    from .components.view_objects import CinematicsView, MenuView
 
     window = Window()
-    lucasfilm = Cinematics(Video("assets/cinematics/lucasfilm.mp4"),
-                           window, end_frame=200)
-    intro = Cinematics(Video("assets/cinematics/intro.mp4"),
-                       window, speed=0.9)
-    menu = Menu(window)
+    lucasfilm = CinematicsView(Video("assets/cinematics/lucasfilm.mp4"),
+                               window, end_frame=200)
+    intro = CinematicsView(Video("assets/cinematics/intro.mp4"),
+                           window, speed=0.9)
+    menu = MenuView(window)
+    # settings = SettingsView
+    # map_selection = MapSelectionView
 
     def __init__(self):
         self.lucasfilm._launch()
         self.intro._launch()
-        page = self.menu._launch()
+        view = self.menu._launch()
         while True:
-            self.menu._launch()
+            if view == 1:
+                self.menu._launch()
+            # if view == 2:
+                # self.settings._launch()
+            # if view == 3:
+            #     self.map_selection._launch()
 
 
 def start_vizualizer():
