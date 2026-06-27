@@ -14,6 +14,7 @@ import pygame as pg
 import sys
 from pyvidplayer2 import Video
 from sources.components.window import Window
+from sources.components.buttons import ViewAction
 from .components.views import (
         Cinematics,
         MenuView,
@@ -32,9 +33,6 @@ class Visualizer():
     map_selection = MapSelectionView()
 
     def _start(self):
-
-        from sources.components.buttons import ViewAction
-
         self.lucas._launch()
         self.intro._launch()
         self.menu._launch()
