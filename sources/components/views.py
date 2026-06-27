@@ -1,22 +1,24 @@
 # ************************************************************************* #
 #                                                                           #
 #                                                      :::      ::::::::    #
-#  view_objects.py                                   :+:      :+:    :+:    #
+#  views.py                                          :+:      :+:    :+:    #
 #                                                  +:+ +:+         +:+      #
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/26 04:16:34 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/27 03:54:44 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from abc import ABC, abstractmethod
-from typing import Optional
-from pyvidplayer2 import Video
-from sources.visualizer import Window, SURFACE, WIN_WIDTH, WIN_HEIGHT
-from sources.components.gui_objects import Action, MenuButton
 import sys
 import pygame as pg
+
+from typing import Optional
+from pyvidplayer2 import Video
+from abc import ABC, abstractmethod
+from sources.components.buttons import ButtonListMapSelection, ButtonListMenu, ButtonListSettings, ViewAction
+from sources.components.scales import Scale
+from sources.visualizer import Window
 
 
 class View(ABC):
@@ -32,8 +34,8 @@ class View(ABC):
 
     def _render_image(self, path: str, coord: tuple[int, int] = (0, 0)):
         img = pg.image.load(path).convert()
-        img = pg.transform.scale(img, SURFACE.get_size())
-        SURFACE.blit(img, coord)
+        img = pg.transform.scale(img, Window.surface.get_size())
+        Window.surface.blit(img, coord)
 
     def _render_button(self):
         pass
@@ -66,25 +68,24 @@ class Cinematics(View):
                         self.video.seek_frame(self.video.frame_count - 2)
 
     def _launch(self) -> int:
-        self.video.resize(SURFACE.get_size())
+        self.video.resize(Window.surface.get_size())
         while True:
             if self.video.frame == self.end_frame:
                 break
             self._get_events()
-            self.video.draw(SURFACE, (0, 0))
+            self.video.draw(Window.surface, (0, 0))
             pg.display.update()
         self.video.stop()
         return 0
 
 
 class MenuView(View):
-
     def _get_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
                 sys.exit()
-            if event.type in [action.value for action in Action]:
+            if event.type in [action.value for action in ViewAction]:
                 pg.event.post(event)
                 self.running = False
             if event.type == pg.KEYDOWN:
@@ -93,21 +94,18 @@ class MenuView(View):
                         Window._rewrite({"resolution": [1920, 1080]})
                     elif Window.data["resolution"] == [1920, 1080]:
                         Window._rewrite({"resolution": [4096, 2304]})
+                    self.buttons._update()
+                    print(Scale().menu_button)
 
     def _launch(self):
+        self.buttons = ButtonListMenu()
         self.running = True
         pg.mixer.Channel(0).play(pg.mixer.Sound("assets/sound/menu.wav"), 1000)
-        play = MenuButton((int(WIN_WIDTH * 0.2), int(WIN_HEIGHT * 0.33)),
-                          (WIN_WIDTH * 0.1, WIN_WIDTH * 0.05), "Play", Action.MAP_SELECTION, 6, 10)
-        settings = MenuButton((int(WIN_WIDTH * 0.2), int(WIN_HEIGHT * 0.45)),
-                              (WIN_WIDTH * 0.1, WIN_WIDTH * 0.05), "Settings", Action.SETTINGS, 6, 10)
-        exit = MenuButton((int(WIN_WIDTH * 0.2), int(WIN_HEIGHT * 0.57)),
-                          (WIN_WIDTH * 0.1, WIN_WIDTH * 0.05), "Exit", Action.EXIT, 6, 10)
         while self.running:
             self._render_image("assets/gui/menu_background.png")
-            play._render()
-            settings._render()
-            exit._render()
+            self.buttons._menu_button_play._render()
+            self.buttons._menu_button_settings._render()
+            self.buttons._menu_button_exit._render()
             self._get_events()
             pg.display.update()
 
@@ -118,7 +116,7 @@ class SettingsView(View):
             if event.type == pg.QUIT:
                 pg.quit()
                 sys.exit()
-            if event.type in [action.value for action in Action]:
+            if event.type in [action.value for action in ViewAction]:
                 pg.event.post(event)
                 self.running = False
             if event.type == pg.KEYDOWN:
@@ -127,21 +125,44 @@ class SettingsView(View):
                         Window._rewrite({"resolution": [1920, 1080]})
                     elif Window.data["resolution"] == [1920, 1080]:
                         Window._rewrite({"resolution": [4096, 2304]})
+                    self.buttons._update()
 
     def _launch(self):
+        self.buttons = ButtonListSettings()
         self.running = True
-        back = MenuButton((int(WIN_WIDTH * 0.2), int(WIN_HEIGHT * 0.33)),
-                          (450, 200), "Back", Action.MENU, 6, 10)
         while self.running:
             self._render_image("assets/gui/menu_background.png")
-            back._render()
+            self.buttons._settings_button_minus_res._render()
+            self.buttons._settings_button_plus_res._render()
+            self.buttons._settings_button_minus_sound._render()
+            self.buttons._settings_button_plus_sound._render()
+            self.buttons._settings_button_back._render()
             self._get_events()
             pg.display.update()
 
 
 class MapSelectionView(View):
     def _get_events(self):
-        pass
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type in [action.value for action in ViewAction]:
+                pg.event.post(event)
+                self.running = False
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_f:
+                    if Window.data["resolution"] == [4096, 2304]:
+                        Window._rewrite({"resolution": [1920, 1080]})
+                    elif Window.data["resolution"] == [1920, 1080]:
+                        Window._rewrite({"resolution": [4096, 2304]})
+                    self.buttons._update()
 
     def _launch(self):
-        pass
+        self.buttons = ButtonListMapSelection()
+        self.running = True
+        while self.running:
+            self._render_image("assets/gui/menu_background.png")
+            self.buttons._mapselection_button_back._render()
+            self._get_events()
+            pg.display.update()

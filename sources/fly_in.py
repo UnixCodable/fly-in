@@ -11,8 +11,9 @@
 # *************************************************************************** #
 
 from .parser import read_map
-from .visualizer import start_vizualizer
+from .visualizer import Visualizer
 
 if __name__ == "__main__":
     object = read_map()
-    start_vizualizer()
+    visualizer = Visualizer()
+    visualizer._start()
