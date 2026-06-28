@@ -14,8 +14,8 @@ import pygame as pg
 import sys
 from pyvidplayer2 import Video
 from sources.components.window import Window
-from sources.components.buttons import ViewAction
-from .components.views import (
+from sources.components.gui.buttons import ViewAction
+from .components.gui.views import (
         Cinematics,
         MenuView,
         SettingsView,
@@ -33,17 +33,17 @@ class Visualizer():
     map_selection = MapSelectionView()
 
     def _start(self):
-        self.lucas._launch()
-        self.intro._launch()
-        self.menu._launch()
+        self.lucas.launch()
+        self.intro.launch()
+        self.menu.launch()
         while True:
             for event in pg.event.get():
                 if event.type == ViewAction.MENU.value:
-                    self.menu._launch()
+                    self.menu.launch()
                 if event.type == ViewAction.SETTINGS.value:
-                    self.settings._launch()
+                    self.settings.launch()
                 if event.type == ViewAction.MAP_SELECTION.value:
-                    self.map_selection._launch()
+                    self.map_selection.launch()
                 if event.type == ViewAction.EXIT.value:
                     pg.quit()
                     sys.exit(0)

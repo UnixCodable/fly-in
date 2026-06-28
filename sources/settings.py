@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/24 05:48:29 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/24 22:42:58 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/27 15:58:14 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -22,6 +22,8 @@ class Settings():
         try:
             with open("settings.json", "x") as file:
                 self.__data = {"resolution": (screen[0][0], screen[0][1]),
+                               "res_index": 0,
+                               "res_list": screen,
                                "mode": "windowed",
                                "sound": 10}
                 json.dump(self.__data, file)

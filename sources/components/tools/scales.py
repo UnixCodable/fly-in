@@ -1,27 +1,25 @@
 # ************************************************************************* #
 #                                                                           #
 #                                                      :::      ::::::::    #
-#  scale_calculations.py                             :+:      :+:    :+:    #
+#  scales.py                                         :+:      :+:    :+:    #
 #                                                  +:+ +:+         +:+      #
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/27 02:15:46 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/27 02:16:27 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/28 01:52:17 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 from sources.visualizer import Window
 
 
-class Scale():
-    def __init__(self):
-        self._menu_button = (Window.width * 0.15, Window.width * 0.05)
-        self._menu_button_square = (Window.width * 0.02, Window.width * 0.02)
+def scale_size(scale_x, scale_y) -> tuple[int, int]:
+    return (int(Window.width * scale_x), int(Window.width * scale_y))
 
-    @property
-    def menu_button(self):
-        return self._menu_button
 
-    @property
-    def menu_button_square(self):
-        return self._menu_button_square
+def scale_pos(scale_x, scale_y) -> tuple[int, int]:
+    return (int(Window.width * scale_x), int(Window.height * scale_y))
+
+
+def scale_text(scale: float) -> int:
+    return int(Window.width * scale)

@@ -16,10 +16,11 @@ from enum import Enum
 from abc import ABC, abstractmethod
 from typing import Self
 from sources.visualizer import Window
-from sources.components.scales import Scale
+from sources.components.tools.scales import scale_size, scale_pos, scale_text
 
 
 class Action(Enum):
+    FULLSCREEN_BOOL = pg.event.custom_type()
     MINUS_RES = pg.event.custom_type()
     MINUS_SOUND = pg.event.custom_type()
     PLUS_RES = pg.event.custom_type()
@@ -47,19 +48,18 @@ class Button(ABC):
         self.sound = pg.mixer.Sound("assets/sound/button.mp3")
 
     @abstractmethod
-    def _render(self):
+    def render(self):
         pass
 
 
 class MenuButton(Button):
     def __init__(self, pos: tuple[int, int], tag: str, action: Enum):
-        super().__init__(pos, tag, Scale().menu_button, action)
-        self.font = pg.Font("assets/fonts/Starjhol.ttf", int(Window.width * 0.025))
-        # self.font = pg.Font("assets/fonts/Oswald.ttf", int(Window.width * 0.015))
+        super().__init__(pos, tag, scale_size(0.15, 0.05), action)
+        self.font = pg.Font("assets/fonts/Starjhol.ttf", scale_text(0.025))
         self.color = pg.Color(255, 255, 255)
         self.color_hover = pg.Color(255, 228, 54)
 
-    def _render(self):
+    def render(self):
         self.text = self.font.render(self.tag, True, self.color)
         center_text = ((self.rect.width - self.text.get_width()) / 2,
                        (self.rect.height - self.text.get_height()) / 2 * 0.6)
@@ -89,12 +89,12 @@ class MenuButton(Button):
 
 class SquareButton(Button):
     def __init__(self, pos: tuple[int, int], tag: str, action: Enum):
-        super().__init__(pos, tag, Scale().menu_button_square, action)
-        self.font = pg.Font("assets/fonts/Oswald.ttf", int(Window.width * 0.015))
+        super().__init__(pos, tag, scale_size(0.02, 0.02), action)
+        self.font = pg.Font("assets/fonts/Oswald.ttf", scale_text(0.015))
         self.color = pg.Color(255, 255, 255)
         self.color_hover = pg.Color(255, 228, 54)
 
-    def _render(self):
+    def render(self):
         self.text = self.font.render(self.tag, True, self.color)
         center_text = ((self.rect.width - self.text.get_width()) / 2,
                        (self.rect.height - self.text.get_height()) / 2 * 0.6)
@@ -106,6 +106,7 @@ class SquareButton(Button):
     def _collide(self):
         mouse = pg.mouse.get_pos()
         if self.rect.collidepoint(mouse):
+
             if self.clickable is False:
                 pg.mixer.Channel(1).play(self.sound)
             self.clickable = True
@@ -124,59 +125,50 @@ class SquareButton(Button):
 class ButtonList(ABC):
 
     @abstractmethod
-    def _update(self):
+    def update(self):
         pass
 
 
 class ButtonListMenu(ButtonList):
     def __init__(self):
-        self._update()
+        self.update()
 
-    def _update(self):
+    def update(self):
         self._menu_button_play = MenuButton(
-            (Window.width * 0.2, Window.height * 0.33),
-            "Play", ViewAction.MAP_SELECTION)
+            scale_pos(0.2, 0.33), "Play", ViewAction.MAP_SELECTION)
 
         self._menu_button_settings = MenuButton(
-            (Window.width * 0.2, Window.height * 0.45),
-            "Settings", ViewAction.SETTINGS)
+            scale_pos(0.2, 0.45), "Settings", ViewAction.SETTINGS)
 
         self._menu_button_exit = MenuButton(
-            (Window.width * 0.2, Window.height * 0.57),
-            "Exit", ViewAction.EXIT)
+            scale_pos(0.2, 0.57), "Exit", ViewAction.EXIT)
 
 
 class ButtonListSettings(ButtonList):
     def __init__(self):
-        self._update()
+        self.update()
 
-    def _update(self):
+    def update(self):
         self._settings_button_minus_res = SquareButton(
-            (Window.width * 0.2, Window.height * 0.33),
-            "-", Action.MINUS_RES)
+            scale_pos(0.2, 0.41), "<", Action.MINUS_RES)
 
         self._settings_button_minus_sound = SquareButton(
-            (Window.width * 0.2, Window.height * 0.45),
-            "-", Action.MINUS_SOUND)
+            scale_pos(0.2, 0.53), "-", Action.MINUS_SOUND)
 
         self._settings_button_plus_res = SquareButton(
-            (Window.width * 0.4, Window.height * 0.33),
-            "+", Action.PLUS_RES)
+            scale_pos(0.3985, 0.41), ">", Action.PLUS_RES)
 
         self._settings_button_plus_sound = SquareButton(
-            (Window.width * 0.4, Window.height * 0.45),
-            "+", Action.PLUS_SOUND)
+            scale_pos(0.3985, 0.53), "+", Action.PLUS_SOUND)
 
         self._settings_button_back = MenuButton(
-            (Window.width * 0.2, Window.height * 0.57),
-            "Back", ViewAction.MENU)
+            scale_pos(0.2, 0.65), "Back", ViewAction.MENU)
 
 
 class ButtonListMapSelection(ButtonList):
     def __init__(self):
-        self._update()
+        self.update()
 
-    def _update(self):
+    def update(self):
         self._mapselection_button_back = MenuButton(
-            (Window.width * 0.2, Window.height * 0.57),
-            "Back", ViewAction.MENU)
+            scale_pos(0.2, 0.57), "Back", ViewAction.MENU)
