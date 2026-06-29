@@ -14,7 +14,11 @@ from pydantic import BaseModel, model_validator, Field, ValidationError
 from enum import Enum
 from .components.map_objects import Hub, Connection, Drone
 from typing import Optional
-import sys
+
+
+# Constants
+ANSII_RED = "\033[1;31m"
+ANSII_NORMAL = "\033[0m"
 
 
 class Error(Enum):
@@ -208,12 +212,12 @@ class LineParser(BaseModel):
         return self
 
 
-def read_map() -> GlobalParser:
+def read_map(path: str) -> Optional[GlobalParser]:
     hub_list: list[Hub] = []
     connection_list: list[Connection] = []
     drone_list: list[Drone] = []
     try:
-        with open("assets/maps/hard/03_ultimate_challenge.txt") as file:
+        with open(path) as file:
             for nb, line in enumerate(file.readlines()):
 
                 line = line[0:line.index("#") if '#' in line else -1]
@@ -249,14 +253,10 @@ def read_map() -> GlobalParser:
         for e in err.errors():
             print(ANSII_RED)
             if e.get('type') != 'value_error':
+                print(path)
                 print(f"[ERROR] - (line {nb + 1}) : {e.get('msg')}")
             else:
                 print(e.get('msg').split(', ', maxsplit=1)[1])
         print('Please ensure format is "<key>: <value> ... <[metadata]>."')
         print(ANSII_NORMAL)
-        sys.exit(0)
-
-
-# Constants
-ANSII_RED = "\033[1;31m"
-ANSII_NORMAL = "\033[0m"
+        return None

@@ -32,7 +32,7 @@ class Visualizer():
     settings = SettingsView()
     map_selection = MapSelectionView()
 
-    def _start(self):
+    def start(self):
         self.lucas.launch()
         self.intro.launch()
         self.menu.launch()

@@ -6,13 +6,15 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/28 04:23:38 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/29 02:33:38 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 import sys
+import os
 import pygame as pg
 
+from ...parser import read_map
 from typing import Optional
 from pyvidplayer2 import Video
 from abc import ABC, abstractmethod
@@ -42,6 +44,9 @@ class View(ABC):
         font = pg.Font(path, scaled_text)
         text = font.render(text,  True, color)
         Window.surface.blit(text, scaled_pos)
+
+    def _animated_drone(self, path: str):
+        pass
 
 
 class Cinematics(View):
@@ -97,10 +102,23 @@ class MenuView(View):
         self.running = True
         pg.mixer.Channel(0).play(pg.mixer.Sound("assets/sound/menu.wav"), 1000)
         while self.running:
-            self._render_image("assets/gui/menu_background.png")
-            self.buttons._menu_button_play.render()
-            self.buttons._menu_button_settings.render()
-            self.buttons._menu_button_exit.render()
+            Window.animated_background()
+            Window.animated_drone()
+            self._render_text(
+                "assets/fonts/Starjhol.ttf",
+                "Fly in",
+                scale_text(0.06),
+                scale_pos(0.385, 0.03)
+            )
+            self._render_text(
+                "assets/fonts/Oswald.ttf",
+                "Made with force by Lucas Bordanave, from 42 Mulhouse",
+                scale_text(0.018),
+                scale_pos(0.313, 0.92)
+            )
+            self.buttons.menu_button_play.render()
+            self.buttons.menu_button_settings.render()
+            self.buttons.menu_button_exit.render()
             self._get_events()
             pg.display.update()
 
@@ -139,12 +157,19 @@ class SettingsView(View):
                     Window.rewrite({"res_index": len(Window.data["res_list"]) - 1,
                                     "resolution": new})
                 self.buttons.update()
-            
+            if event.type == Action.FULLSCREEN_BOOL.value:
+                if Window.data["mode"] == "fullscreen":
+                    Window.rewrite({"mode": "windowed"})
+                else:
+                    Window.rewrite({"mode": "fullscreen"})
+                self.buttons.update()
+
     def launch(self):
         self.buttons = ButtonListSettings()
         self.running = True
         while self.running:
-            self._render_image("assets/gui/menu_background.png")
+            Window.animated_background()
+            Window.animated_drone()
             self._render_text(
                 "assets/fonts/Starjhol.ttf",
                 "+" * Window.data['sound'],
@@ -167,38 +192,92 @@ class SettingsView(View):
                 "assets/fonts/Starjhol.ttf",
                 "sound :",
                 scale_text(0.015),
-                scale_pos(0.105, 0.518)
+                scale_pos(0.105, 0.52)
             )
             self._render_text(
                 "assets/fonts/Starjhol.ttf",
-                "fullscreen :",
+                "fullscreen ",
                 scale_text(0.015),
-                scale_pos(0.06, 0.288)
+                scale_pos(0.23, 0.285)
             )
-            self.buttons._settings_button_minus_res.render()
-            self.buttons._settings_button_plus_res.render()
-            self.buttons._settings_button_minus_sound.render()
-            self.buttons._settings_button_plus_sound.render()
-            self.buttons._settings_button_back.render()
+            if Window.data["mode"] == "fullscreen":
+                self.buttons.settings_button_fullscreen_on.render()
+            else:
+                self.buttons.settings_button_fullscreen_off.render()
+            self.buttons.settings_button_minus_res.render()
+            self.buttons.settings_button_plus_res.render()
+            self.buttons.settings_button_minus_sound.render()
+            self.buttons.settings_button_plus_sound.render()
+            self.buttons.settings_button_back.render()
             self._get_events()
             pg.display.update()
 
 
 class MapSelectionView(View):
+    def __init__(self):
+        self.preview = None
+
     def _get_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
                 sys.exit()
             if event.type in [action.value for action in ViewAction]:
-                pg.event.post(event)
-                self.running = False
+                if event.type == ViewAction.PREVIEW_GAME.value:
+                    self.preview = read_map(event.path)
+                else:
+                    self.running = False
+                    pg.event.post(event)
+            if event.type == pg.KEYUP:
+                if event.key == pg.K_ESCAPE:
+                    self.preview = None
+            if event.type == Action.SCROLL_DOWN.value:
+                self.buttons.setter_scroll(0.03)
+                self.buttons.update()
+            if event.type == Action.SCROLL_UP.value:
+                self.buttons.setter_scroll(-0.03)
+                self.buttons.update()
+
+    def _read_preview(self):
+        pg.draw.rect(Window.surface, (255, 228, 54), pg.Rect(scale_pos(0.5, 0.1), scale_size(0.43, 0.35)), 0, 10)
+        pg.draw.rect(Window.surface, "black", pg.Rect(scale_pos(0.51, 0.12), scale_size(0.41, 0.2)), 0, 10)
+
+        self._render_text(
+            "assets/fonts/Oswald.ttf",
+            f"Number of drones : {self.preview.drone[0].number}",
+            scale_text(0.015),
+            scale_pos(0.52, 0.49),
+            (0, 0, 0)
+        )
+        self._render_text(
+            "assets/fonts/Oswald.ttf",
+            f"Number of hubs : {len(self.preview.hubs)}",
+            scale_text(0.015),
+            scale_pos(0.52, 0.53),
+            (0, 0, 0)
+        )
+        self._render_text(
+            "assets/fonts/Oswald.ttf",
+            f"Number of connections : {len(self.preview.connections)}",
+            scale_text(0.015),
+            scale_pos(0.52, 0.57),
+            (0, 0, 0)
+        )
+
+        self.buttons.play_button.render()
 
     def launch(self):
         self.buttons = ButtonListMapSelection()
         self.running = True
         while self.running:
-            self.render_image("assets/gui/menu_background.png")
-            self.buttons._mapselection_button_back.render()
+            Window.animated_background()
+            Window.animated_drone()
+            Window.surface.set_clip(pg.Rect(scale_pos(0.1, 0.1), scale_size(0.38, 0.45)))
+            [map.render() for map in self.buttons.mapselections_buttons_maps]
+            pg.draw.rect(Window.surface, (255, 228, 54), Window.surface.get_clip(), 10, 20)
+            Window.surface.set_clip(None)
+            self.buttons.settings_button_back.render()
+            if self.preview:
+                self._read_preview()
             self._get_events()
             pg.display.update()
