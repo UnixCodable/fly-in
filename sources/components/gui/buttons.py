@@ -27,6 +27,9 @@ class Action(Enum):
     MINUS_SOUND = pg.event.custom_type()
     PLUS_RES = pg.event.custom_type()
     PLUS_SOUND = pg.event.custom_type()
+    SCROLL_VIS_LEFT = pg.event.custom_type()
+    SCROLL_VIS_RIGHT = pg.event.custom_type()
+    SCROLL_VIS_RESET = pg.event.custom_type()
 
 
 class ViewAction(Enum):
@@ -297,3 +300,12 @@ class ButtonListMapSelection(ButtonList):
 
         self.play_button = MapPlayButton(
             scale_pos(0.75, 0.5), "Play", ViewAction.MENU)
+
+        self.visualizer_left_button = SquareButton(
+            scale_pos(0.515, 0.43), "<", Action.SCROLL_VIS_RIGHT)
+
+        self.visualizer_right_button = SquareButton(
+            scale_pos(0.895, 0.43), ">", Action.SCROLL_VIS_LEFT)
+
+        self.visualizer_reset_button = SquareButton(
+            scale_pos(0.697, 0.43), "-", Action.SCROLL_VIS_RESET)

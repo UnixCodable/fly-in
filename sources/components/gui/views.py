@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/29 02:33:38 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/29 04:53:19 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -216,6 +216,7 @@ class SettingsView(View):
 class MapSelectionView(View):
     def __init__(self):
         self.preview = None
+        self.p_start = 0.54
 
     def _get_events(self):
         for event in pg.event.get():
@@ -237,10 +238,18 @@ class MapSelectionView(View):
             if event.type == Action.SCROLL_UP.value:
                 self.buttons.setter_scroll(-0.03)
                 self.buttons.update()
+            if event.type == Action.SCROLL_VIS_LEFT.value:
+                self.p_start -= 0.02
+            if event.type == Action.SCROLL_VIS_RIGHT.value:
+                self.p_start += 0.02
+            if event.type == Action.SCROLL_VIS_RESET.value:
+                self.p_start = 0.54
 
     def _read_preview(self):
-        pg.draw.rect(Window.surface, (255, 228, 54), pg.Rect(scale_pos(0.5, 0.1), scale_size(0.43, 0.35)), 0, 10)
-        pg.draw.rect(Window.surface, "black", pg.Rect(scale_pos(0.51, 0.12), scale_size(0.41, 0.2)), 0, 10)
+        viewer = pg.Rect(scale_pos(0.51, 0.12), scale_size(0.41, 0.2))
+        pop_up = pg.Rect(scale_pos(0.5, 0.1), scale_size(0.43, 0.35))
+        pg.draw.rect(Window.surface, (255, 228, 54), pop_up, 0, 10)
+        pg.draw.rect(Window.surface, (12, 14, 45), viewer, 0, 10)
 
         self._render_text(
             "assets/fonts/Oswald.ttf",
@@ -264,7 +273,36 @@ class MapSelectionView(View):
             (0, 0, 0)
         )
 
+        for hub in self.preview.hubs:
+            preview_scale = scale_pos(self.p_start + (hub.coordinates[0] / 30),
+                                      0.3 + (hub.coordinates[1] / 30))
+            if viewer.collidepoint(preview_scale):
+                try:
+                    pg.draw.circle(Window.surface,
+                                   hub.color,
+                                   preview_scale,
+                                   scale_text(0.007))
+                except ValueError:
+                    pg.draw.circle(Window.surface,
+                                   "white",
+                                   preview_scale,
+                                   scale_text(0.007))
+
+        for connection in self.preview.connections:
+            zone_1 = self.preview.get_hub(connection.first_zone)
+            zone_1_pos = scale_pos(self.p_start + (zone_1.coordinates[0] / 30),
+                                   0.3 + (zone_1.coordinates[1] / 30))
+            zone_2 = self.preview.get_hub(connection.second_zone)
+            zone_2_pos = scale_pos(self.p_start + (zone_2.coordinates[0] / 30),
+                                   0.3 + (zone_2.coordinates[1] / 30))
+            if (viewer.collidepoint(zone_1_pos)
+                    and viewer.collidepoint(zone_2_pos)):
+                pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 3)
+
         self.buttons.play_button.render()
+        self.buttons.visualizer_right_button.render()
+        self.buttons.visualizer_left_button.render()
+        self.buttons.visualizer_reset_button.render()
 
     def launch(self):
         self.buttons = ButtonListMapSelection()

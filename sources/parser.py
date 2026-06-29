@@ -142,6 +142,10 @@ class GlobalParser(BaseModel):
             raise ValueError(Error.get_err('E1012', self.drone[0].line))
         return self
 
+    def get_hub(self, name: str) -> Hub:
+        hub_search = [hub for hub in self.hubs if hub.name == name]
+        return hub_search[0]
+
 
 class LineParser(BaseModel):
     line:    tuple[int, str] = Field()
