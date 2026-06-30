@@ -13,7 +13,7 @@
 from pydantic import BaseModel, model_validator, Field, ValidationError
 from enum import Enum
 from .components.map_objects import Hub, Connection, Drone
-from typing import Optional
+from typing import Optional, Self, Union
 
 
 # Constants
@@ -45,7 +45,9 @@ class Error(Enum):
     E1020 = "Too much values. Ensure metadata are in list : [<metadata>]."
 
     @classmethod
-    def get_err(cls, code: str, line: Optional[int] = None):
+    def get_err(cls,
+                code: str,
+                line: Optional[Union[int, list[int]]] = None) -> str:
         if line is None:
             return f"[ERROR] : {Error[code].value}"
         return f"[ERROR] - (line {line}) : {Error[code].value}"
@@ -57,7 +59,7 @@ class GlobalParser(BaseModel):
     drone: list[Drone]
 
     @model_validator(mode='after')
-    def check_double_name(self):
+    def check_double_name(self) -> Self:
         hub_line = [h.line for h in self.hubs]
         hub_name = [h.name for h in self.hubs]
         for index, h in enumerate(hub_name):
@@ -66,7 +68,7 @@ class GlobalParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def check_double_coord(self):
+    def check_double_coord(self) -> Self:
         hub_line = [h.line for h in self.hubs]
         hub_coord = [h.coordinates for h in self.hubs]
         for index, h in enumerate(hub_coord):
@@ -75,7 +77,7 @@ class GlobalParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def check_start(self):
+    def check_start(self) -> Self:
         hub_line = [h.line for h in self.hubs if h.hub_type == 'start_hub']
         if len(hub_line) == 0:
             raise ValueError(Error.get_err('E1001'))
@@ -84,7 +86,7 @@ class GlobalParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def check_end(self):
+    def check_end(self) -> Self:
         hub_line = [h.line for h in self.hubs if h.hub_type == 'end_hub']
         if len(hub_line) == 0:
             raise ValueError(Error.get_err('E1004'))
@@ -93,7 +95,7 @@ class GlobalParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def check_double_link(self):
+    def check_double_link(self) -> Self:
 
         hub_name = [h.name for h in self.hubs]
 
@@ -111,7 +113,7 @@ class GlobalParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def check_linked(self):
+    def check_linked(self) -> Self:
         zone_list = [(c.first_zone, c.second_zone) for c in self.connections]
         for index, co in enumerate(self.connections):
             if (co.first_zone, co.second_zone) in zone_list[:index]:
@@ -121,7 +123,7 @@ class GlobalParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def check_drone_alone(self):
+    def check_drone_alone(self) -> Self:
 
         drone_line = [d.line for d in self.drone]
 
@@ -134,7 +136,7 @@ class GlobalParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def check_drone_first(self):
+    def check_drone_first(self) -> Self:
         lines = sorted([h.line for h in self.hubs]
                        + [c.line for c in self.connections]
                        + [self.drone[0].line])
@@ -154,7 +156,7 @@ class LineParser(BaseModel):
     metadata: dict[str, str] = Field(default={})
 
     @model_validator(mode='after')
-    def line_check_separator(self):
+    def line_check_separator(self) -> Self:
         string = self.line[1]
 
         if ' ' in string[0] or '  ' in string or '::' in string:
@@ -162,7 +164,7 @@ class LineParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def line_partition(self):
+    def line_partition(self) -> Self:
         accepted = ('hub', 'start_hub', 'end_hub', 'connection', 'nb_drones')
 
         self.key, sep, val = self.line[1].partition(': ')
@@ -190,15 +192,16 @@ class LineParser(BaseModel):
         return self
 
     @model_validator(mode='after')
-    def metadata_partition(self):
+    def metadata_partition(self) -> Self:
         values = self.values
+        val_meta: tuple[str, str, str] | tuple[str]
 
         if 'hub' in self.key and len(values) == 4:
             pos = 3
             val_meta = ('color', 'zone', 'max_drones')
         elif 'connection' in self.key and len(values) == 3:
             pos = 2
-            val_meta = ('max_link_capacity')
+            val_meta = ('max_link_capacity',)
         else:
             return self
         if values[pos].startswith('[') and values[pos].endswith(']'):
@@ -216,7 +219,7 @@ class LineParser(BaseModel):
         return self
 
 
-def read_map(path: str) -> Optional[GlobalParser]:
+def read_map(path: str) -> Union[GlobalParser | str]:
     hub_list: list[Hub] = []
     connection_list: list[Connection] = []
     drone_list: list[Drone] = []
@@ -258,9 +261,11 @@ def read_map(path: str) -> Optional[GlobalParser]:
             print(ANSII_RED)
             if e.get('type') != 'value_error':
                 print(path)
-                print(f"[ERROR] - (line {nb + 1}) : {e.get('msg')}")
+                message = f"[ERROR] - (line {nb + 1}) : {e.get('msg')}"
             else:
-                print(e.get('msg').split(', ', maxsplit=1)[1])
-        print('Please ensure format is "<key>: <value> ... <[metadata]>."')
+                message = e.get('msg').split(', ', maxsplit=1)[1]
+        message += "\n"
+        message += 'Please ensure format is "<key>: <value> ... <[metadata]>."'
+        print(message)
         print(ANSII_NORMAL)
-        return None
+        return message

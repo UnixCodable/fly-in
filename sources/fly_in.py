@@ -10,7 +10,6 @@
 #                                                                             #
 # *************************************************************************** #
 
-from .parser import read_map
 from .visualizer import Visualizer
 
 if __name__ == "__main__":

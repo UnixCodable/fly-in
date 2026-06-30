@@ -19,7 +19,8 @@ from .components.gui.views import (
         Cinematics,
         MenuView,
         SettingsView,
-        MapSelectionView
+        MapSelectionView,
+        Game
     )
 
 
@@ -31,6 +32,7 @@ class Visualizer():
     menu = MenuView()
     settings = SettingsView()
     map_selection = MapSelectionView()
+    game = Game()
 
     def start(self):
         self.lucas.launch()
@@ -38,6 +40,9 @@ class Visualizer():
         self.menu.launch()
         while True:
             for event in pg.event.get():
+                if event.type == ViewAction.GAME.value:
+                    self.game.set_object(event.objects)
+                    self.game.launch()
                 if event.type == ViewAction.MENU.value:
                     self.menu.launch()
                 if event.type == ViewAction.SETTINGS.value:

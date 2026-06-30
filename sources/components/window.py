@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/27 02:24:00 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/29 01:18:46 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/30 01:24:50 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -32,7 +32,7 @@ class Window():
         surface = pg.display.set_mode((width, height))
 
     @classmethod
-    def rewrite(cls, new_config: dict, reload_surface: bool = True):
+    def rewrite(cls, new_config: dict, reload_surface: bool = True) -> None:
         cls.settings._set_settings(new_config)
         cls.data = cls.settings._get_settings()
         cls.width, cls.height = cls.data["resolution"]
@@ -46,22 +46,23 @@ class Window():
                 cls.surface = pg.display.set_mode((cls.width, cls.height))
 
     @classmethod
-    def animated_background(cls):
+    def animated_background(cls) -> None:
         stars = pg.image.load("assets/gui/background.png").convert()
         stars = pg.transform.scale(stars, cls.surface.get_size())
-        cls.surface.blit(stars, (0, cls.background_pos_y))
-        cls.surface.blit(stars, (0, cls.height + cls.background_pos_y))
+        cls.surface.blit(stars, (cls.background_pos_y, 0))
+        cls.surface.blit(stars, (cls.height + cls.background_pos_y, 0))
         if cls.background_pos_y <= -cls.height:
             cls.background_pos_y = 0
         else:
             cls.background_pos_y -= 2
 
     @classmethod
-    def animated_drone(cls):
+    def animated_drone(cls) -> None:
         drone = pg.image.load("assets/gui/drone.png").convert_alpha()
         drone = pg.transform.scale(drone, ((drone.width * cls.width) / 3840,
                                            (drone.height * cls.height) / 2160))
-        cls.surface.blit(drone, (cls.width * 0.5, cls.height * 0.3 + cls.drone_pos_y))
+        cls.surface.blit(drone,
+                         (cls.width * 0.5, cls.height * 0.3 + cls.drone_pos_y))
         if cls.drone_up is False:
             cls.drone_pos_y -= 1
             if cls.drone_pos_y <= -int(drone.height * 0.025):

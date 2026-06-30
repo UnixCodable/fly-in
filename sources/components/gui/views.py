@@ -6,19 +6,22 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/29 04:53:19 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/30 03:17:07 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 import sys
-import os
 import pygame as pg
 
-from ...parser import read_map
-from typing import Optional
+from ...parser import GlobalParser, read_map
+from typing import Optional, Union
 from pyvidplayer2 import Video
 from abc import ABC, abstractmethod
-from sources.components.gui.buttons import Action, ButtonListMapSelection, ButtonListMenu, ButtonListSettings, ViewAction
+from sources.components.gui.buttons import (Action,
+                                            ButtonListMapSelection,
+                                            ButtonListMenu,
+                                            ButtonListSettings,
+                                            ViewAction)
 from sources.components.tools.scales import scale_text, scale_pos, scale_size
 from sources.visualizer import Window
 
@@ -31,7 +34,7 @@ class View(ABC):
         pass
 
     @abstractmethod
-    def launch(self) -> int:
+    def launch(self) -> None:
         pass
 
     def _render_image(self, path: str, coord: tuple[int, int] = (0, 0)):
@@ -39,14 +42,16 @@ class View(ABC):
         img = pg.transform.scale(img, Window.surface.get_size())
         Window.surface.blit(img, coord)
 
-    def _render_text(self, path: str, text: str, scaled_text: tuple[int, int],
-                     scaled_pos: tuple[int, int], color: pg.Color = (255, 255, 255)):
+    def _render_text(self,
+                     path: str,
+                     text: str,
+                     scaled_text: int,
+                     scaled_pos: tuple[int, int],
+                     color: pg.Color = pg.Color(255, 255, 255)):
+
         font = pg.Font(path, scaled_text)
         text = font.render(text,  True, color)
         Window.surface.blit(text, scaled_pos)
-
-    def _animated_drone(self, path: str):
-        pass
 
 
 class Cinematics(View):
@@ -75,7 +80,7 @@ class Cinematics(View):
                     else:
                         self.video.seek_frame(self.video.frame_count - 2)
 
-    def launch(self) -> int:
+    def launch(self) -> None:
         self.video.resize(Window.surface.get_size())
         while True:
             if self.video.frame == self.end_frame:
@@ -84,11 +89,10 @@ class Cinematics(View):
             self.video.draw(Window.surface, (0, 0))
             pg.display.update()
         self.video.stop()
-        return 0
 
 
 class MenuView(View):
-    def _get_events(self):
+    def _get_events(self) -> None:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
@@ -97,7 +101,7 @@ class MenuView(View):
                 pg.event.post(event)
                 self.running = False
 
-    def launch(self):
+    def launch(self) -> None:
         self.buttons = ButtonListMenu()
         self.running = True
         pg.mixer.Channel(0).play(pg.mixer.Sound("assets/sound/menu.wav"), 1000)
@@ -124,7 +128,7 @@ class MenuView(View):
 
 
 class SettingsView(View):
-    def _get_events(self):
+    def _get_events(self) -> None:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
@@ -139,22 +143,26 @@ class SettingsView(View):
                 if Window.data['sound'] < 10:
                     Window.rewrite({"sound": Window.data['sound'] + 1}, False)
             if event.type == Action.MINUS_RES.value:
+                res_list = Window.data["res_list"]
+                res_index = Window.data["res_index"]
                 try:
-                    new = Window.data["res_list"][Window.data["res_index"] + 1]
-                    Window.rewrite({"res_index": Window.data["res_index"] + 1,
+                    new = res_list[res_index + 1]
+                    Window.rewrite({"res_index": res_index + 1,
                                     "resolution": new})
                 except IndexError:
                     new = Window.data["res_list"][0]
                     Window.rewrite({"res_index": 0, "resolution": new})
                 self.buttons.update()
             if event.type == Action.PLUS_RES.value:
+                res_list = Window.data["res_list"]
+                res_index = Window.data["res_index"]
                 if Window.data["res_index"] != 0:
-                    new = Window.data["res_list"][Window.data["res_index"] - 1]
-                    Window.rewrite({"res_index": Window.data["res_index"] - 1,
+                    new = res_list[res_index - 1]
+                    Window.rewrite({"res_index": res_index - 1,
                                     "resolution": new})
                 else:
-                    new = Window.data["res_list"][len(Window.data["res_list"]) - 1]
-                    Window.rewrite({"res_index": len(Window.data["res_list"]) - 1,
+                    new = res_list[len(res_list) - 1]
+                    Window.rewrite({"res_index": len(res_list) - 1,
                                     "resolution": new})
                 self.buttons.update()
             if event.type == Action.FULLSCREEN_BOOL.value:
@@ -164,7 +172,7 @@ class SettingsView(View):
                     Window.rewrite({"mode": "fullscreen"})
                 self.buttons.update()
 
-    def launch(self):
+    def launch(self) -> None:
         self.buttons = ButtonListSettings()
         self.running = True
         while self.running:
@@ -214,11 +222,11 @@ class SettingsView(View):
 
 
 class MapSelectionView(View):
-    def __init__(self):
-        self.preview = None
+    def __init__(self) -> None:
+        self.preview: Optional[Union[str, GlobalParser]] = None
         self.p_start = 0.54
 
-    def _get_events(self):
+    def _get_events(self) -> None:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
@@ -226,9 +234,13 @@ class MapSelectionView(View):
             if event.type in [action.value for action in ViewAction]:
                 if event.type == ViewAction.PREVIEW_GAME.value:
                     self.preview = read_map(event.path)
-                else:
+                elif event.type == ViewAction.GAME.value:
+                    pg.event.post(pg.Event(event.type,
+                                           {"objects": self.preview}))
                     self.running = False
+                else:
                     pg.event.post(event)
+                    self.running = False
             if event.type == pg.KEYUP:
                 if event.key == pg.K_ESCAPE:
                     self.preview = None
@@ -245,32 +257,43 @@ class MapSelectionView(View):
             if event.type == Action.SCROLL_VIS_RESET.value:
                 self.p_start = 0.54
 
-    def _read_preview(self):
+    def _read_preview(self) -> None:
         viewer = pg.Rect(scale_pos(0.51, 0.12), scale_size(0.41, 0.2))
-        pop_up = pg.Rect(scale_pos(0.5, 0.1), scale_size(0.43, 0.35))
+        pop_up = pg.Rect(scale_pos(0.5, 0.1), scale_size(0.43, 0.30))
         pg.draw.rect(Window.surface, (255, 228, 54), pop_up, 0, 10)
         pg.draw.rect(Window.surface, (12, 14, 45), viewer, 0, 10)
+        if self.preview is None:
+            return
+        if isinstance(self.preview, str):
+            self._render_text(
+                "assets/fonts/Oswald.ttf",
+                self.preview,
+                scale_text(0.013),
+                scale_pos(0.515, 0.51),
+                pg.Color(235, 33, 46)
+            )
+            return
 
         self._render_text(
             "assets/fonts/Oswald.ttf",
             f"Number of drones : {self.preview.drone[0].number}",
             scale_text(0.015),
             scale_pos(0.52, 0.49),
-            (0, 0, 0)
+            pg.Color(0, 0, 0)
         )
         self._render_text(
             "assets/fonts/Oswald.ttf",
             f"Number of hubs : {len(self.preview.hubs)}",
             scale_text(0.015),
             scale_pos(0.52, 0.53),
-            (0, 0, 0)
+            pg.Color(0, 0, 0)
         )
         self._render_text(
             "assets/fonts/Oswald.ttf",
             f"Number of connections : {len(self.preview.connections)}",
             scale_text(0.015),
             scale_pos(0.52, 0.57),
-            (0, 0, 0)
+            pg.Color(0, 0, 0)
         )
 
         for hub in self.preview.hubs:
@@ -304,18 +327,69 @@ class MapSelectionView(View):
         self.buttons.visualizer_left_button.render()
         self.buttons.visualizer_reset_button.render()
 
-    def launch(self):
+    def launch(self) -> None:
         self.buttons = ButtonListMapSelection()
         self.running = True
         while self.running:
             Window.animated_background()
             Window.animated_drone()
-            Window.surface.set_clip(pg.Rect(scale_pos(0.1, 0.1), scale_size(0.38, 0.45)))
-            [map.render() for map in self.buttons.mapselections_buttons_maps]
-            pg.draw.rect(Window.surface, (255, 228, 54), Window.surface.get_clip(), 10, 20)
+            Window.surface.set_clip(
+                pg.Rect(scale_pos(0.1, 0.1), scale_size(0.38, 0.45)))
+            for map in self.buttons.mapselections_buttons_maps:
+                map.render()
+            clip = Window.surface.get_clip()
+            pg.draw.rect(Window.surface, (255, 228, 54), clip, 10, 20)
             Window.surface.set_clip(None)
             self.buttons.settings_button_back.render()
-            if self.preview:
+            if self.preview is not None:
                 self._read_preview()
             self._get_events()
             pg.display.update()
+
+
+class Game(View):
+    def __init__(self):
+        self.object = None
+        self.p_start = 0.1
+
+    def _get_events(self) -> None:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type in [action.value for action in ViewAction]:
+                pg.event.post(event)
+                self.running = False
+
+    def launch(self) -> None:
+        while self.running:
+            Window.animated_background()
+
+            for connection in self.object.connections:
+                zone_1 = self.object.get_hub(connection.first_zone)
+                zone_1_pos = scale_pos(self.p_start + (zone_1.coordinates[0] / 8),
+                                       0.46 + (zone_1.coordinates[1] / 8))
+                zone_2 = self.object.get_hub(connection.second_zone)
+                zone_2_pos = scale_pos(self.p_start + (zone_2.coordinates[0] / 8),
+                                       0.46 + (zone_2.coordinates[1] / 8))
+                pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 8)
+
+            for hub in self.object.hubs:
+                game_scale = scale_pos(self.p_start + (hub.coordinates[0] / 8),
+                                       0.46 + (hub.coordinates[1] / 8))
+                try:
+                    pg.draw.circle(Window.surface,
+                                   hub.color,
+                                   game_scale,
+                                   scale_text(0.04))
+                except ValueError:
+                    pg.draw.circle(Window.surface,
+                                   "white",
+                                   game_scale,
+                                   scale_text(0.04))
+
+            self._get_events()
+            pg.display.update()
+
+    def set_object(self, object: GlobalParser) -> None:
+        self.object = object
