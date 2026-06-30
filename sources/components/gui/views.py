@@ -6,10 +6,11 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/30 03:17:07 by lbordana        ###   ########.fr        #
+#  Updated: 2026/06/30 05:24:14 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
+from curses import KEY_DOWN
 import sys
 import pygame as pg
 
@@ -350,7 +351,12 @@ class MapSelectionView(View):
 class Game(View):
     def __init__(self):
         self.object = None
-        self.p_start = 0.1
+        self.p_x = 0.1
+        self.p_y = 0.46
+        self.moving_up = False
+        self.moving_left = False
+        self.moving_right = False
+        self.moving_down = False
 
     def _get_events(self) -> None:
         for event in pg.event.get():
@@ -360,23 +366,50 @@ class Game(View):
             if event.type in [action.value for action in ViewAction]:
                 pg.event.post(event)
                 self.running = False
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_LEFT or event.key == pg.K_a:
+                    self.moving_left = True
+                if event.key == pg.K_UP or event.key == pg.K_w:
+                    self.moving_up = True
+                if event.key == pg.K_RIGHT or event.key == pg.K_d:
+                    self.moving_right = True
+                if event.key == pg.K_DOWN or event.key == pg.K_s:
+                    self.moving_down = True
+            if event.type == pg.KEYUP:
+                if event.key == pg.K_LEFT or event.key == pg.K_a:
+                    self.moving_left = False
+                if event.key == pg.K_UP or event.key == pg.K_w:
+                    self.moving_up = False
+                if event.key == pg.K_RIGHT or event.key == pg.K_d:
+                    self.moving_right = False
+                if event.key == pg.K_DOWN or event.key == pg.K_s:
+                    self.moving_down = False
 
     def launch(self) -> None:
         while self.running:
             Window.animated_background()
 
+            if self.moving_up is True:
+                self.p_y -= 0.01
+            if self.moving_left is True:
+                self.p_x -= 0.01
+            if self.moving_down is True:
+                self.p_y += 0.01
+            if self.moving_right is True:
+                self.p_x += 0.01
+
             for connection in self.object.connections:
                 zone_1 = self.object.get_hub(connection.first_zone)
-                zone_1_pos = scale_pos(self.p_start + (zone_1.coordinates[0] / 8),
-                                       0.46 + (zone_1.coordinates[1] / 8))
                 zone_2 = self.object.get_hub(connection.second_zone)
-                zone_2_pos = scale_pos(self.p_start + (zone_2.coordinates[0] / 8),
-                                       0.46 + (zone_2.coordinates[1] / 8))
-                pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 8)
+                zone_1_pos = scale_pos(self.p_x + (zone_1.coordinates[0] / 6),
+                                       self.p_y + (zone_1.coordinates[1] / 6))
+                zone_2_pos = scale_pos(self.p_x + (zone_2.coordinates[0] / 6),
+                                       self.p_y + (zone_2.coordinates[1] / 6))
+                pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 6)
 
             for hub in self.object.hubs:
-                game_scale = scale_pos(self.p_start + (hub.coordinates[0] / 8),
-                                       0.46 + (hub.coordinates[1] / 8))
+                game_scale = scale_pos(self.p_x + (hub.coordinates[0] / 6),
+                                       self.p_y + (hub.coordinates[1] / 6))
                 try:
                     pg.draw.circle(Window.surface,
                                    hub.color,
