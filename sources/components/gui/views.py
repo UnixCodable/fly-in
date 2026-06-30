@@ -6,13 +6,17 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/30 05:24:14 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/01 01:25:57 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from curses import KEY_DOWN
+from pydoc import text
 import sys
 import pygame as pg
+from pygame.transform import scale
+
+import sources.components.algorithms.a_star
+from sources.components.algorithms.a_star import start_algorithm
 
 from ...parser import GlobalParser, read_map
 from typing import Optional, Union
@@ -375,6 +379,9 @@ class Game(View):
                     self.moving_right = True
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = True
+                if event.key == pg.K_ESCAPE:
+                    pg.event.post(pg.Event(ViewAction.MENU.value))
+                    self.running = False
             if event.type == pg.KEYUP:
                 if event.key == pg.K_LEFT or event.key == pg.K_a:
                     self.moving_left = False
@@ -386,6 +393,10 @@ class Game(View):
                     self.moving_down = False
 
     def launch(self) -> None:
+
+        self.running = True
+        start_algorithm(self.object)
+
         while self.running:
             Window.animated_background()
 
@@ -408,17 +419,23 @@ class Game(View):
                 pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 6)
 
             for hub in self.object.hubs:
-                game_scale = scale_pos(self.p_x + (hub.coordinates[0] / 6),
-                                       self.p_y + (hub.coordinates[1] / 6))
+                game_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
+                                     self.p_y + (hub.coordinates[1] / 6))
+                text_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
+                                     self.p_y + (hub.coordinates[1] / 6) + 0.04)
                 try:
                     pg.draw.circle(Window.surface,
                                    hub.color,
-                                   game_scale,
+                                   game_pos,
                                    scale_text(0.04))
+                    self._render_text("assets/fonts/Oswald.ttf",
+                                      hub.name,
+                                      scale_text(0.02),
+                                      text_pos)
                 except ValueError:
                     pg.draw.circle(Window.surface,
                                    "white",
-                                   game_scale,
+                                   game_pos,
                                    scale_text(0.04))
 
             self._get_events()

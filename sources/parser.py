@@ -148,6 +148,10 @@ class GlobalParser(BaseModel):
         hub_search = [hub for hub in self.hubs if hub.name == name]
         return hub_search[0]
 
+    def get_start_hub(self) -> Hub:
+        hub_search = [hub for hub in self.hubs if hub.hub_type == 'start_hub']
+        return hub_search[0]
+
 
 class LineParser(BaseModel):
     line:    tuple[int, str] = Field()

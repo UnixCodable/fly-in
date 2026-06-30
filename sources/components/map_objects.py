@@ -32,4 +32,4 @@ class Hub(BaseModel):
     color:       str = Field(pattern=r"^([a-zA-Z]+)$")
     zone:        str = Field(pattern=r"(restricted|priority|normal|blocked)")
     max_drones:  int = Field(gt=0)
-    line: int = Field(ge=0)
+    line:        int = Field(ge=0)
