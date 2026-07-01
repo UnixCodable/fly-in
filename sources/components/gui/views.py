@@ -1,16 +1,15 @@
-# ************************************************************************* #
-#                                                                           #
-#                                                      :::      ::::::::    #
-#  views.py                                          :+:      :+:    :+:    #
-#                                                  +:+ +:+         +:+      #
-#  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
-#                                              +#+#+#+#+#+   +#+            #
-#  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/01 12:56:36 by lbordana        ###   ########.fr        #
-#                                                                           #
-# ************************************************************************* #
+# *************************************************************************** #
+#                                                                             #
+#                                                         :::      ::::::::   #
+#   views.py                                            :+:      :+:    :+:   #
+#                                                     +:+ +:+         +:+     #
+#   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
+#                                                 +#+#+#+#+#+   +#+           #
+#   Created: 2026/06/25 09:07:21 by lbordana           #+#    #+#             #
+#   Updated: 2026/07/01 13:52:06 by lbordana          ###   ########.fr       #
+#                                                                             #
+# *************************************************************************** #
 
-from pydoc import text
 import sys
 import pygame as pg
 from pygame.transform import scale
@@ -41,11 +40,6 @@ class View(ABC):
     @abstractmethod
     def launch(self) -> None:
         pass
-
-    def _render_image(self, path: str, coord: tuple[int, int] = (0, 0)):
-        img = pg.image.load(path).convert()
-        img = pg.transform.scale(img, Window.surface.get_size())
-        Window.surface.blit(img, coord)
 
     def _render_text(self,
                      path: str,
