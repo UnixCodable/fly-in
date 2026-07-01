@@ -347,7 +347,7 @@ class ButtonListMapSelection(ButtonList):
                         MapSelectionButton(
                             scale_pos(0.11, line_gap),
                             f[:-4], file[0]+"/"+f, ViewAction.PREVIEW_GAME)
-                    )
+                        )
                     line_gap += 0.14
 
         self.settings_button_back = MenuButton(

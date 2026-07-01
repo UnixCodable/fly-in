@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/25 09:07:21 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/01 01:25:57 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/01 12:56:36 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -395,7 +395,7 @@ class Game(View):
     def launch(self) -> None:
 
         self.running = True
-        start_algorithm(self.object)
+        position = start_algorithm(self.object)
 
         while self.running:
             Window.animated_background()
@@ -428,10 +428,16 @@ class Game(View):
                                    hub.color,
                                    game_pos,
                                    scale_text(0.04))
-                    self._render_text("assets/fonts/Oswald.ttf",
-                                      hub.name,
-                                      scale_text(0.02),
-                                      text_pos)
+                    try:
+                        self._render_text("assets/fonts/Oswald.ttf",
+                                          str([pos[0] for pos in position if pos[1] == hub.name][0]),
+                                          scale_text(0.02),
+                                          text_pos)
+                    except Exception:
+                        self._render_text("assets/fonts/Oswald.ttf",
+                                          str([pos[0] for pos in position if pos[1] == hub.name]),
+                                          scale_text(0.02),
+                                          text_pos)
                 except ValueError:
                     pg.draw.circle(Window.surface,
                                    "white",
