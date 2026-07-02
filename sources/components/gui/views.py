@@ -6,13 +6,12 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/06/25 09:07:21 by lbordana           #+#    #+#             #
-#   Updated: 2026/07/01 13:52:06 by lbordana          ###   ########.fr       #
+#   Updated: 2026/07/02 17:38:03 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
 import sys
 import pygame as pg
-from pygame.transform import scale
 
 import sources.components.algorithms.a_star
 from sources.components.algorithms.a_star import start_algorithm

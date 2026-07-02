@@ -1,22 +1,26 @@
-# ************************************************************************* #
-#                                                                           #
-#                                                      :::      ::::::::    #
-#  a_star.py                                         :+:      :+:    :+:    #
-#                                                  +:+ +:+         +:+      #
-#  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
-#                                              +#+#+#+#+#+   +#+            #
-#  Created: 2026/06/30 17:36:20 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/02 17:27:58 by lbordana        ###   ########.fr        #
-#                                                                           #
-# ************************************************************************* #
+# *************************************************************************** #
+#                                                                             #
+#                                                         :::      ::::::::   #
+#   a_star.py                                           :+:      :+:    :+:   #
+#                                                     +:+ +:+         +:+     #
+#   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
+#                                                 +#+#+#+#+#+   +#+           #
+#   Created: 2026/06/30 17:36:20 by lbordana           #+#    #+#             #
+#   Updated: 2026/07/02 18:26:03 by lbordana          ###   ########.fr       #
+#                                                                             #
+# *************************************************************************** #
 
 from sources.components.map_objects import Connection, Hub
 from sources.parser import GlobalParser
 
 
 class Drone():
-    def __init__(self, start_hub: Hub):
+    def __init__(self, start_hub: Hub, id: str):
+        self.id = id
         self.current_pos = start_hub
+
+    def move_drone(self, hub: Hub):
+        self.current_pos = hub
 
 
 class AStarAlgorithm():
