@@ -6,12 +6,17 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/30 17:36:20 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/02 01:54:51 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/02 17:27:58 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 from sources.components.map_objects import Connection, Hub
 from sources.parser import GlobalParser
+
+
+class Drone():
+    def __init__(self, start_hub: Hub):
+        self.current_pos = start_hub
 
 
 class AStarAlgorithm():
@@ -86,10 +91,7 @@ class AStarAlgorithm():
 
         return path_calc
 
-    def _get_next_cost(self):
-        pass
-
-    def _get_next_heuristic(self):
+    def _update_map(self):
         pass
 
 
