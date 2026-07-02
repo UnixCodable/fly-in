@@ -422,21 +422,17 @@ class Game(View):
                                    hub.color,
                                    game_pos,
                                    scale_text(0.04))
-                    try:
-                        self._render_text("assets/fonts/Oswald.ttf",
-                                          str([pos[0] for pos in position if pos[1] == hub.name][0]),
-                                          scale_text(0.02),
-                                          text_pos)
-                    except Exception:
-                        self._render_text("assets/fonts/Oswald.ttf",
-                                          str([pos[0] for pos in position if pos[1] == hub.name]),
-                                          scale_text(0.02),
-                                          text_pos)
+
                 except ValueError:
                     pg.draw.circle(Window.surface,
                                    "white",
                                    game_pos,
                                    scale_text(0.04))
+
+                self._render_text("assets/fonts/Oswald.ttf",
+                                  str(position.get(hub.name)),
+                                  scale_text(0.02),
+                                  text_pos)
 
             self._get_events()
             pg.display.update()
