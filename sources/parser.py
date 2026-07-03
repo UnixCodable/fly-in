@@ -12,7 +12,7 @@
 
 from pydantic import BaseModel, model_validator, Field, ValidationError
 from enum import Enum
-from .components.map_objects import Hub, Connection, Drone
+from .components.map_objects import Hub, Connection
 from typing import Optional, Self, Union
 
 
@@ -56,7 +56,7 @@ class Error(Enum):
 class GlobalParser(BaseModel):
     hubs: list[Hub]
     connections: list[Connection]
-    drone: list[Drone]
+    total_drone: int
 
     @model_validator(mode='after')
     def check_double_name(self) -> Self:
@@ -122,28 +122,6 @@ class GlobalParser(BaseModel):
                 raise ValueError(Error.get_err('E1009', co.line))
         return self
 
-    @model_validator(mode='after')
-    def check_drone_alone(self) -> Self:
-
-        drone_line = [d.line for d in self.drone]
-
-        if len(self.drone) == 0:
-            raise ValueError(Error.get_err('E1010'))
-
-        if len(self.drone) > 1:
-            raise ValueError(Error.get_err('E1011', drone_line[1:]))
-
-        return self
-
-    @model_validator(mode='after')
-    def check_drone_first(self) -> Self:
-        lines = sorted([h.line for h in self.hubs]
-                       + [c.line for c in self.connections]
-                       + [self.drone[0].line])
-        if self.drone[0].line != lines[0]:
-            raise ValueError(Error.get_err('E1012', self.drone[0].line))
-        return self
-
     def get_hub(self, name: str) -> Hub:
         hub_search = [hub for hub in self.hubs if hub.name == name]
         return hub_search[0]
@@ -158,6 +136,7 @@ class GlobalParser(BaseModel):
 
 
 class LineParser(BaseModel):
+    is_first:           bool = Field()
     line:    tuple[int, str] = Field()
     key:                 str = Field(default='')
     values:        list[str] = Field(default=[])
@@ -181,7 +160,13 @@ class LineParser(BaseModel):
         if self.key not in accepted:
             raise ValueError(Error.get_err('E1015', self.line[0]))
 
+        if self.is_first is True:
+            if 'nb_drones' not in self.key:
+                raise ValueError(Error.get_err('E1012'))
+
         if 'nb_drones' in self.key:
+            if self.is_first is False:
+                raise ValueError(Error.get_err('E1011', self.line[0]))
             self.values = val.strip().split()
             if len(self.values) > 1:
                 raise ValueError(Error.get_err('E1016', self.line[0]))
@@ -230,7 +215,8 @@ class LineParser(BaseModel):
 def read_map(path: str) -> Union[GlobalParser | str]:
     hub_list: list[Hub] = []
     connection_list: list[Connection] = []
-    drone_list: list[Drone] = []
+    first = True
+    # drone_list: list[Drone] = []
     try:
         with open(path) as file:
             for nb, line in enumerate(file.readlines()):
@@ -239,7 +225,10 @@ def read_map(path: str) -> Union[GlobalParser | str]:
                 if line == '\n' or line == '':
                     continue
 
-                parser = LineParser(line=(nb + 1, line))
+                parser = LineParser(is_first=first, line=(nb + 1, line))
+                if 'nb_drones' in parser.key:
+                    nb_drone = parser.values[0]
+                    first = False
                 if 'hub' in parser.key:
                     hub_list.append(Hub(
                         hub_type=parser.key,
@@ -257,13 +246,10 @@ def read_map(path: str) -> Union[GlobalParser | str]:
                         max_link=parser.metadata.get('max_link_capacity', 1),
                         line=nb + 1
                     ))
-                if 'nb_drone' in parser.key:
-                    drone_list.append(Drone(number=parser.values[0],
-                                            line=nb + 1))
 
         return GlobalParser(hubs=hub_list,
                             connections=connection_list,
-                            drone=drone_list)
+                            total_drone=nb_drone)
     except ValidationError as err:
         for e in err.errors():
             print(ANSII_RED)

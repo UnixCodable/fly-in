@@ -17,10 +17,10 @@ from sources.parser import GlobalParser
 class Drone():
     def __init__(self, start_hub: Hub, id: str):
         self.id = id
-        self.current_pos = start_hub
+        self.current_pos: Hub | Connection = start_hub
 
-    def move_drone(self, hub: Hub):
-        self.current_pos = hub
+    def move_drone(self, position: Hub | Connection):
+        self.current_pos = position
 
 
 class AStarAlgorithm():
@@ -46,7 +46,12 @@ class AStarAlgorithm():
         index = 0
 
         while mapper != []:
-            count = actual_hub[0] + 1
+            if self.map.get_hub(actual_hub[1]).zone == "blocked":
+                pass
+            elif self.map.get_hub(actual_hub[1]).zone == "restricted":
+                count = actual_hub[0] + 2
+            else:
+                count = actual_hub[0] + 1
             while index < len(mapper):
                 if mapper[index].first_zone == actual_hub[1]:
                     if count <= dist_calc.get(mapper[index].second_zone, count):
@@ -64,6 +69,10 @@ class AStarAlgorithm():
             actual_hub = queue[0]
             queue.pop(0)
 
+        # for hub in path_calc.keys():
+        #     if path_calc[hub] == "restricted":
+        #         path_calc[hub] += 1
+
         return dist_calc
 
     def _calc_path(self):
@@ -75,7 +84,10 @@ class AStarAlgorithm():
         index = 0
 
         while mapper != []:
-            count = actual_hub[0] + 1
+            if self.map.get_hub(actual_hub[1]).zone == "restricted":
+                count = actual_hub[0] + 2
+            else:
+                count = actual_hub[0] + 1
             while index < len(mapper):
                 if mapper[index].first_zone == actual_hub[1]:
                     if count <= path_calc.get(mapper[index].second_zone, count):
@@ -93,6 +105,10 @@ class AStarAlgorithm():
             actual_hub = queue[0]
             queue.pop(0)
 
+        # for hub in path_calc.keys():
+        #     if self.map.get_hub(hub).zone == "restricted":
+        #         path_calc[hub] += 1
+
         return path_calc
 
     def _update_map(self):
@@ -100,6 +116,11 @@ class AStarAlgorithm():
 
 
 def start_algorithm(map: GlobalParser):
+    algorithm = AStarAlgorithm(map)
+    drones = []
+    for id in range(map.total_drone):
+        drones.append(Drone(algorithm.start_hub, f"D{id}"))
+
     path = AStarAlgorithm(map)._calc_path()
     dist = AStarAlgorithm(map)._calc_distance()
     return AStarAlgorithm(map)._calc_heuristic(dist, path)

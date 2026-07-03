@@ -13,11 +13,6 @@
 from pydantic import BaseModel, Field
 
 
-class Drone(BaseModel):
-    number: int = Field(gt=0)
-    line:   int = Field(ge=0)
-
-
 class Connection(BaseModel):
     first_zone:  str = Field(max_length=30, pattern=r"^([a-zA-Z0-9_]+)$")
     second_zone: str = Field(max_length=30, pattern=r"^([a-zA-Z0-9_]+)$")
@@ -33,3 +28,5 @@ class Hub(BaseModel):
     zone:        str = Field(pattern=r"(restricted|priority|normal|blocked)")
     max_drones:  int = Field(gt=0)
     line:        int = Field(ge=0)
+    status:      str = Field(default="free")
+    queue: list[str] = Field(default=[])

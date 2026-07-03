@@ -274,7 +274,7 @@ class MapSelectionView(View):
 
         self._render_text(
             "assets/fonts/Oswald.ttf",
-            f"Number of drones : {self.preview.drone[0].number}",
+            f"Number of drones : {self.preview.total_drone}",
             scale_text(0.015),
             scale_pos(0.52, 0.49),
             pg.Color(0, 0, 0)
@@ -432,6 +432,10 @@ class Game(View):
                                   str(position.get(hub.name)),
                                   scale_text(0.02),
                                   text_pos)
+                self._render_text("assets/fonts/Oswald.ttf",
+                                  hub.zone,
+                                  scale_text(0.02),
+                                  scale_pos(self.p_x + (hub.coordinates[0] / 6) + 0.03, self.p_y + (hub.coordinates[1] / 6) + 0.04))
 
             self._get_events()
             pg.display.update()
