@@ -10,17 +10,8 @@
 #                                                                             #
 # *************************************************************************** #
 
-from sources.components.map_objects import Connection, Hub
+from sources.components.map_objects import Connection, Drone, Hub
 from sources.parser import GlobalParser
-
-
-class Drone():
-    def __init__(self, start_hub: Hub, id: str):
-        self.id = id
-        self.current_pos: Hub | Connection = start_hub
-
-    def move_drone(self, position: Hub | Connection):
-        self.current_pos = position
 
 
 class AStarAlgorithm():
@@ -69,10 +60,6 @@ class AStarAlgorithm():
             actual_hub = queue[0]
             queue.pop(0)
 
-        # for hub in path_calc.keys():
-        #     if path_calc[hub] == "restricted":
-        #         path_calc[hub] += 1
-
         return dist_calc
 
     def _calc_path(self):
@@ -84,8 +71,11 @@ class AStarAlgorithm():
         index = 0
 
         while mapper != []:
-            if self.map.get_hub(actual_hub[1]).zone == "restricted":
+            hub = self.map.get_hub(actual_hub[1])
+            if hub != self.start_hub and hub.zone == "restricted":
                 count = actual_hub[0] + 2
+            elif hub != self.start_hub and len(hub.occupant) >= hub.max_drones:
+                count = actual_hub[0] + 2 + len(hub.queued)
             else:
                 count = actual_hub[0] + 1
             while index < len(mapper):
@@ -105,21 +95,28 @@ class AStarAlgorithm():
             actual_hub = queue[0]
             queue.pop(0)
 
-        # for hub in path_calc.keys():
-        #     if self.map.get_hub(hub).zone == "restricted":
-        #         path_calc[hub] += 1
-
         return path_calc
 
-    def _update_map(self):
-        pass
+    def update_map(self):
+        path = AStarAlgorithm(map)._calc_path()
+        dist = AStarAlgorithm(map)._calc_distance()
+        return AStarAlgorithm(map)._calc_heuristic(dist, path)
+
+    def move_drone(self, drone: Drone, pos: Hub | Connection):
+        with open("output.txt", "a") as file:
+            if type(pos) is Hub:
+                file.write(f"{drone.id}-{pos.name} ")
+                pos.occupant.append(drone)
+            elif type(pos) is Connection:
+                file.write(f"{drone.id}-{pos.first_zone}-{pos.second_zone} ")
 
 
 def start_algorithm(map: GlobalParser):
     algorithm = AStarAlgorithm(map)
-    drones = []
+    drones: list[Drone] = []
     for id in range(map.total_drone):
-        drones.append(Drone(algorithm.start_hub, f"D{id}"))
+        drones.append(Drone(f"D{id}"))
+        algorithm.move_drone(drones[-1], algorithm.start_hub)
 
     path = AStarAlgorithm(map)._calc_path()
     dist = AStarAlgorithm(map)._calc_distance()

@@ -20,7 +20,12 @@ class Connection(BaseModel):
     line:        int = Field(ge=0)
 
 
-class Hub(BaseModel):
+class Drone():
+    def __init__(self, id: str):
+        self.id = id
+
+
+class Hub(BaseModel, arbitrary_types_allowed=True):
     hub_type:    str
     name:        str = Field(max_length=30, pattern=r"^([a-zA-Z0-9_]+)$")
     coordinates: tuple[int, int]
@@ -28,5 +33,5 @@ class Hub(BaseModel):
     zone:        str = Field(pattern=r"(restricted|priority|normal|blocked)")
     max_drones:  int = Field(gt=0)
     line:        int = Field(ge=0)
-    status:      str = Field(default="free")
-    queue: list[str] = Field(default=[])
+    occupant:  list[Drone] = Field(default=[])
+    queued:    list[Drone] = Field(default=[])
