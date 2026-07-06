@@ -12,7 +12,6 @@
 
 from sources.components.map_objects import Connection, Drone, Hub
 from sources.parser import GlobalParser
-from functools import lru_cache
 
 
 class AStarAlgorithm():
@@ -72,17 +71,24 @@ class AStarAlgorithm():
 
         return path_calc
 
-    def _find_path(self):
-        pass
+    def _find_best_node(self, drone: Drone, heuristic: dict):
+        possible_zones = []
+        for connection in self.map.connections:
+            if connection.first_zone == drone.pos:
+                possible_zones.append(connection.second_zone)
+            elif connection.second_zone == drone.pos:
+                possible_zones.append(connection.first_zone)
 
-    def update_map(self):
-        dist = self._calc_path(self.end_hub)
+        min([nb[1] for nb in heuristic.items() if nb[0] in possible_zones])
+
+    def update_map(self, pos: Hub):
+        dist = self._calc_path(pos)
         path = self._calc_path(self.start_hub)
         return self._calc_heuristic(dist, path)
 
-    def move_drone(self, drone: Drone, pos: Hub | Connection):
-        self.update_map()
-        self._find_path()
+    def move_drone(self, drone: Drone):
+        map_heuristic = self.update_map(self.map.get_hub(drone.pos))
+        pos: Hub | Connection = self._find_best_node(drone, map_heuristic)
         with open("output.txt", "a") as file:
             if type(pos) is Hub:
                 file.write(f"{drone.id}-{pos.name} ")
@@ -96,7 +102,7 @@ def start_algorithm(map: GlobalParser):
     drones: list[Drone] = []
     for id in range(map.total_drone):
         drones.append(Drone(f"D{id}", algorithm.start_hub.name))
-        algorithm.move_drone(drones[-1], algorithm.start_hub)
+        algorithm.move_drone(drones[-1])
 
-    print(algorithm.update_map())
-    return algorithm.update_map()
+    print(algorithm.update_map(algorithm.start_hub).items())
+    return algorithm.update_map(algorithm.start_hub)
