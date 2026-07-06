@@ -21,8 +21,9 @@ class Connection(BaseModel):
 
 
 class Drone():
-    def __init__(self, id: str):
+    def __init__(self, id: str, pos_name: str):
         self.id = id
+        self.pos = pos_name
 
 
 class Hub(BaseModel, arbitrary_types_allowed=True):
