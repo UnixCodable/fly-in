@@ -10,6 +10,8 @@
 #                                                                             #
 # *************************************************************************** #
 
+import sys
+
 from sources.components.map_objects import Connection, Drone, Hub
 from sources.parser import GlobalParser
 
@@ -73,29 +75,36 @@ class AStarAlgorithm():
 
     def _find_best_node(self, drone: Drone, heuristic: dict):
         possible_zones = []
+
         for connection in self.map.connections:
             if connection.first_zone == drone.pos:
                 possible_zones.append(connection.second_zone)
             elif connection.second_zone == drone.pos:
                 possible_zones.append(connection.first_zone)
 
-        return sorted([nb for nb in heuristic.items() if nb[0] in possible_zones],
-                      key=lambda item: item[1])[0][0]
+        best_hub = sorted([nb for nb in heuristic.items() if nb[0] in possible_zones],
+                          key=lambda item: item[1])[0][0]
+        return best_hub
 
     def update_map(self, pos: Hub):
         dist = self._calc_path(pos)
-        path = self._calc_path(self.start_hub)
+        path = self._calc_path(self.end_hub)
         return self._calc_heuristic(dist, path)
 
     def move_drone(self, drone: Drone):
         if drone.pos == self.end_hub.name:
             return
         map_heuristic = self.update_map(self.map.get_hub(drone.pos))
-        pos: Hub | Connection = self._find_best_node(drone, map_heuristic)
+        pos: Hub | Connection = self.map.get_hub(self._find_best_node(drone, map_heuristic))
         with open("output.txt", "a") as file:
             if type(pos) is Hub:
+                if len(pos.occupant) >= pos.max_drones:
+                    pos.queued.append(drone)
+                    return
+                self.map.get_hub(drone.pos).occupant.pop(0)
                 file.write(f"{drone.id}-{pos.name} ")
                 pos.occupant.append(drone)
+                drone.pos = pos.name
             elif type(pos) is Connection:
                 file.write(f"{drone.id}-{pos.first_zone}-{pos.second_zone} ")
 
@@ -105,11 +114,17 @@ def start_algorithm(map: GlobalParser):
     drones: list[Drone] = []
     for id in range(map.total_drone):
         drones.append(Drone(f"D{id}", algorithm.start_hub.name))
-        algorithm.move_drone(drones[-1])
+        algorithm.start_hub.occupant.append(drones[-1])
+        with open("output.txt", "a") as file:
+            file.write(f"D{id}-{algorithm.start_hub.name} ")
+
+    with open("output.txt", "a") as file:
+        file.write('\n')
 
     while len(drones) != len([d for d in drones if map.get_hub(d.pos).hub_type == 'end_hub']):
         for d in drones:
             algorithm.move_drone(d)
+        with open("output.txt", "a") as file:
+            file.write('\n')
 
-    print(algorithm.update_map(algorithm.start_hub).items())
-    return algorithm.update_map(algorithm.start_hub)
+    return
