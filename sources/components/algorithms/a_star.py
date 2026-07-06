@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/06/30 17:36:20 by lbordana           #+#    #+#             #
-#   Updated: 2026/07/06 03:26:07 by lbordana          ###   ########.fr       #
+#   Updated: 2026/07/06 13:22:11 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -79,7 +79,8 @@ class AStarAlgorithm():
             elif connection.second_zone == drone.pos:
                 possible_zones.append(connection.first_zone)
 
-        min([nb[1] for nb in heuristic.items() if nb[0] in possible_zones])
+        return sorted([nb for nb in heuristic.items() if nb[0] in possible_zones],
+                      key=lambda item: item[1])[0][0]
 
     def update_map(self, pos: Hub):
         dist = self._calc_path(pos)
@@ -87,6 +88,8 @@ class AStarAlgorithm():
         return self._calc_heuristic(dist, path)
 
     def move_drone(self, drone: Drone):
+        if drone.pos == self.end_hub.name:
+            return
         map_heuristic = self.update_map(self.map.get_hub(drone.pos))
         pos: Hub | Connection = self._find_best_node(drone, map_heuristic)
         with open("output.txt", "a") as file:
@@ -103,6 +106,10 @@ def start_algorithm(map: GlobalParser):
     for id in range(map.total_drone):
         drones.append(Drone(f"D{id}", algorithm.start_hub.name))
         algorithm.move_drone(drones[-1])
+
+    while len(drones) != len([d for d in drones if map.get_hub(d.pos).hub_type == 'end_hub']):
+        for d in drones:
+            algorithm.move_drone(d)
 
     print(algorithm.update_map(algorithm.start_hub).items())
     return algorithm.update_map(algorithm.start_hub)
