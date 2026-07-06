@@ -6,12 +6,13 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/06/30 17:36:20 by lbordana           #+#    #+#             #
-#   Updated: 2026/07/02 18:26:03 by lbordana          ###   ########.fr       #
+#   Updated: 2026/07/06 03:26:07 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
 from sources.components.map_objects import Connection, Drone, Hub
 from sources.parser import GlobalParser
+from functools import lru_cache
 
 
 class AStarAlgorithm():
@@ -28,6 +29,7 @@ class AStarAlgorithm():
 
         return heur_calc
 
+    # @lru_cache()
     def _calc_path(self, start_hub: Hub):
         mapper = self.map.connections.copy()
         actual_hub = (0, start_hub.name)
@@ -70,12 +72,17 @@ class AStarAlgorithm():
 
         return path_calc
 
+    def _find_path(self):
+        pass
+
     def update_map(self):
         dist = self._calc_path(self.end_hub)
         path = self._calc_path(self.start_hub)
         return self._calc_heuristic(dist, path)
 
     def move_drone(self, drone: Drone, pos: Hub | Connection):
+        self.update_map()
+        self._find_path()
         with open("output.txt", "a") as file:
             if type(pos) is Hub:
                 file.write(f"{drone.id}-{pos.name} ")
