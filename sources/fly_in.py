@@ -12,7 +12,7 @@
 
 from .visualizer import Visualizer
 from .parser import read_map
-from .components.algorithms.a_star import start_algorithm
+from .components.algorithms.a_star_backup import start_algorithm
 
 if __name__ == "__main__":
     visualizer = Visualizer()
