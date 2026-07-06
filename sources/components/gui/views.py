@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/06/25 09:07:21 by lbordana           #+#    #+#             #
-#   Updated: 2026/07/06 03:32:14 by lbordana          ###   ########.fr       #
+#   Updated: 2026/07/06 20:08:54 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -386,21 +386,6 @@ class Game(View):
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = False
 
-    def _read_movements(self):
-        line_number = 0
-        with open("output.txt", "w") as file:
-            pass
-
-        start_algorithm(self.object)
-
-        with open("output.txt", "r") as file:
-            lines = file.readlines()
-            while True:
-                line = lines[line_number].strip().split()
-                if line_number < len(lines) - 1:
-                    line_number += 1
-                yield [li.split("-") for li in line]
-
     def launch(self) -> None:
 
         self.running = True
@@ -443,19 +428,6 @@ class Game(View):
                                    "white",
                                    game_pos,
                                    scale_text(0.04))
-
-            if time() > last_time + 1.2:
-                drones = next(turn)
-                last_time = time()
-            for drone in drones:
-                hub = self.object.get_hub(drone[1])
-                drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
-                                      self.p_y + (hub.coordinates[1] / 6))
-
-                pg.draw.circle(Window.surface,
-                               "white",
-                               drone_pos,
-                               scale_text(0.02))
 
             self._get_events()
             pg.display.update()
