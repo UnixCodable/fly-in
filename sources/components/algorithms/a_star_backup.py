@@ -12,7 +12,7 @@
 
 import sys
 
-from sources.components.map_objects import Connection, Drone, Hub
+from sources.components.map_objects import Connection, Hub
 from sources.parser import GlobalParser
 
 

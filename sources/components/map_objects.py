@@ -20,12 +20,6 @@ class Connection(BaseModel):
     line:        int = Field(ge=0)
 
 
-class Drone():
-    def __init__(self, id: str, pos_name: str):
-        self.id = id
-        self.pos = pos_name
-
-
 class Hub(BaseModel, arbitrary_types_allowed=True):
     hub_type:    str
     name:        str = Field(max_length=30, pattern=r"^([a-zA-Z0-9_]+)$")
@@ -38,5 +32,3 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     h_pos:       int = Field(default=0)
     f_pos:       int = Field(default=0)
     parent:      str = Field(default="")
-    occupant:  list[Drone] = Field(default=[])
-    queued:    list[Drone] = Field(default=[])

@@ -14,8 +14,8 @@ import sys
 from time import sleep, time
 import pygame as pg
 
-import sources.components.algorithms.a_star_backup
-from sources.components.algorithms.a_star_backup import start_algorithm
+from sources.components.algorithms.a_star import Algorithm
+from sources.components.map_objects import Hub
 
 from ...parser import GlobalParser, read_map
 from typing import Optional, Union
@@ -386,13 +386,27 @@ class Game(View):
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = False
 
-    def _read_movements(self):
-        pass
+    def _get_drones(self):
+        algorithm = Algorithm(self.object)
+        drones = []
+        for nb in range(self.object.total_drone):
+            path = algorithm.run()
+            drones.append((f"D{nb}", path))
+        [print(d[0], [a.name for a in d[1]]) for d in drones]
+        return drones
+
+    def _execute_turns(self):
+        moves = []
+        for drone in self.drones:
+            drone[1][0].occupant += 1
+            moves.append(drone[0], drone[1][0])
+            drone[1].pop(0)
 
     def launch(self) -> None:
 
         self.running = True
-        lines = self._read_movements()
+        self.drones: list[tuple[str, list[Hub]]] = self._get_drones()
+        # turn = self._execute_turns()
 
         while self.running:
             Window.animated_background()

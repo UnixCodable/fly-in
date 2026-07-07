@@ -12,9 +12,7 @@
 
 from .visualizer import Visualizer
 from .parser import read_map
-from .components.algorithms.a_star_backup import start_algorithm
 
 if __name__ == "__main__":
     visualizer = Visualizer()
     visualizer.start()
-    start_algorithm(read_map("assets/maps/challenger/01_the_impossible_dream.txt"))

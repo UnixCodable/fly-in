@@ -10,7 +10,7 @@
 #                                                                             #
 # *************************************************************************** #
 
-from sources.components.map_objects import Connection, Drone, Hub
+from sources.components.map_objects import Connection, Hub
 from sources.parser import GlobalParser
 
 
@@ -24,11 +24,11 @@ class Algorithm():
     def _h_path(self, next_hub: Hub):
         h_diff = (self.end_hub.coordinates[0] - next_hub.coordinates[0],
                   self.end_hub.coordinates[1] - next_hub.coordinates[1])
-        next_hub.h_pos = (h_diff[0] ** h_diff[0]) + (h_diff[1] ** h_diff[1])
+        next_hub.h_pos = (h_diff[0] ** 2) + (h_diff[1] ** 2)
 
     def _g_path(self, current_hub: Hub, next_hub: Hub):
-        g_pos = (current_hub.g_pos / 10) + 1
-        wait = len([p[g_pos] for p in self.paths if p[g_pos] == next_hub])
+        g_pos = int((current_hub.g_pos / 10) + 1)
+        wait = len([p[g_pos] for p in self.paths if len(p) > g_pos and p[g_pos] == next_hub])
         next_hub.g_pos = int((g_pos + wait) * 10)
 
     def _f_path(self, next_hub: Hub):
@@ -45,21 +45,24 @@ class Algorithm():
 
     def run(self):
         opened = []
+        closed = []
         path = []
         opened.append(self.start_hub)
-        while self.end_hub not in self.closed:
-            current = sorted(self.open, key=lambda item: item.f_pos)[0]
-            self.closed.append(current)
-            self.open.pop(self.closed.index(current))
+        while self.end_hub not in closed:
+            current = sorted(opened, key=lambda item: item.f_pos)[0]
+            closed.append(current)
+            opened.pop(opened.index(current))
             connected = self._find_connections(current)
             for c in connected:
-                if c not in self.open:
+                if c in closed or c.zone == "blocked":
+                    continue
+                if c not in opened:
                     self._g_path(current, c)
                     self._h_path(c)
                     self._f_path(c)
                     c.parent = current.name
-                    self.open.append(c)
-                elif c in self.open:
+                    opened.append(c)
+                elif c in opened:
                     self._g_path(current, c)
                     self._h_path(c)
                     self._f_path(c)
@@ -67,5 +70,5 @@ class Algorithm():
         while current != self.start_hub:
             path.append(current)
             current = self.map.get_hub(current.parent)
-        self.paths.append(path[::1])
+        self.paths.append(path[::-1])
         return path[::-1]
