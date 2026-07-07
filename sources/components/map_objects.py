@@ -6,7 +6,7 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/06/10 17:43:11 by lbordana           #+#    #+#             #
-#   Updated: 2026/06/16 11:26:15 by lbordana          ###   ########.fr       #
+#   Updated: 2026/07/07 02:36:59 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
@@ -37,5 +37,6 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     g_pos:       int = Field(default=0)
     h_pos:       int = Field(default=0)
     f_pos:       int = Field(default=0)
+    parent:      str = Field(default="")
     occupant:  list[Drone] = Field(default=[])
     queued:    list[Drone] = Field(default=[])

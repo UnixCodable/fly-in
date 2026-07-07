@@ -1,14 +1,14 @@
-# ************************************************************************* #
-#                                                                           #
-#                                                      :::      ::::::::    #
-#  a_star.py                                         :+:      :+:    :+:    #
-#                                                  +:+ +:+         +:+      #
-#  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
-#                                              +#+#+#+#+#+   +#+            #
-#  Created: 2026/07/07 00:54:06 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/07 02:16:21 by lbordana        ###   ########.fr        #
-#                                                                           #
-# ************************************************************************* #
+# *************************************************************************** #
+#                                                                             #
+#                                                         :::      ::::::::   #
+#   a_star.py                                           :+:      :+:    :+:   #
+#                                                     +:+ +:+         +:+     #
+#   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
+#                                                 +#+#+#+#+#+   +#+           #
+#   Created: 2026/07/07 00:54:06 by lbordana           #+#    #+#             #
+#   Updated: 2026/07/07 03:53:26 by lbordana          ###   ########.fr       #
+#                                                                             #
+# *************************************************************************** #
 
 from sources.components.map_objects import Connection, Drone, Hub
 from sources.parser import GlobalParser
@@ -19,6 +19,7 @@ class Algorithm():
         self.map: GlobalParser = map
         self.start_hub: Hub = self.map.get_start_hub()
         self.end_hub: Hub = self.map.get_end_hub()
+        self.paths: list[list[Hub]] = []
 
     def _h_path(self, next_hub: Hub):
         h_diff = (self.end_hub.coordinates[0] - next_hub.coordinates[0],
@@ -26,7 +27,9 @@ class Algorithm():
         next_hub.h_pos = (h_diff[0] ** h_diff[0]) + (h_diff[1] ** h_diff[1])
 
     def _g_path(self, current_hub: Hub, next_hub: Hub):
-        next_hub.g_pos = int(((current_hub.g_pos / 10) + 1) * 10)
+        g_pos = (current_hub.g_pos / 10) + 1
+        wait = len([p[g_pos] for p in self.paths if p[g_pos] == next_hub])
+        next_hub.g_pos = int((g_pos + wait) * 10)
 
     def _f_path(self, next_hub: Hub):
         next_hub.f_pos = next_hub.h_pos + next_hub.g_pos
@@ -42,6 +45,7 @@ class Algorithm():
 
     def run(self):
         opened = []
+        path = []
         opened.append(self.start_hub)
         while self.end_hub not in self.closed:
             current = sorted(self.open, key=lambda item: item.f_pos)[0]
@@ -53,9 +57,15 @@ class Algorithm():
                     self._g_path(current, c)
                     self._h_path(c)
                     self._f_path(c)
+                    c.parent = current.name
                     self.open.append(c)
                 elif c in self.open:
                     self._g_path(current, c)
                     self._h_path(c)
                     self._f_path(c)
-                    
+        current = self.end_hub
+        while current != self.start_hub:
+            path.append(current)
+            current = self.map.get_hub(current.parent)
+        self.paths.append(path[::1])
+        return path[::-1]
