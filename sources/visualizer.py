@@ -15,7 +15,7 @@ import sys
 from pyvidplayer2 import Video
 from sources.components.window import Window
 from sources.components.gui.buttons import ViewAction
-from .components.gui.views_backup import (
+from .components.gui.views import (
         Cinematics,
         MenuView,
         SettingsView,

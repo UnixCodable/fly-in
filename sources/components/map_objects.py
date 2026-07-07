@@ -34,5 +34,8 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     zone:        str = Field(pattern=r"(restricted|priority|normal|blocked)")
     max_drones:  int = Field(gt=0)
     line:        int = Field(ge=0)
+    g_pos:       int = Field(default=0)
+    h_pos:       int = Field(default=0)
+    f_pos:       int = Field(default=0)
     occupant:  list[Drone] = Field(default=[])
     queued:    list[Drone] = Field(default=[])

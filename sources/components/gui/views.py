@@ -386,11 +386,13 @@ class Game(View):
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = False
 
+    def _read_movements(self):
+        pass
+
     def launch(self) -> None:
 
         self.running = True
-        last_time = 0
-        turn = self._read_movements()
+        lines = self._read_movements()
 
         while self.running:
             Window.animated_background()
@@ -416,18 +418,15 @@ class Game(View):
             for hub in self.object.hubs:
                 game_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
                                      self.p_y + (hub.coordinates[1] / 6))
+                if hub.color in pg.color.THECOLORS.keys():
+                    color = hub.color
+                else:
+                    color = "wheat"
 
-                try:
-                    pg.draw.circle(Window.surface,
-                                   hub.color,
-                                   game_pos,
-                                   scale_text(0.04))
-
-                except ValueError:
-                    pg.draw.circle(Window.surface,
-                                   "white",
-                                   game_pos,
-                                   scale_text(0.04))
+                pg.draw.circle(Window.surface,
+                               color,
+                               game_pos,
+                               scale_text(0.04))
 
             self._get_events()
             pg.display.update()
