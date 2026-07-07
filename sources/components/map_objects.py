@@ -32,3 +32,22 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     h_pos:       int = Field(default=0)
     f_pos:       int = Field(default=0)
     parent:      str = Field(default="")
+
+
+class Drone():
+    def __init__(self, id: str, current_pos: Hub, path: list[Hub]) -> None:
+        self.id = id
+        self._current_pos = current_pos
+        self._path: list[Hub] = path
+
+    def set_current_pos(self, current_pos: Hub) -> None:
+        self._current_pos = current_pos
+
+    def get_current_pos(self) -> Hub:
+        return self._current_pos
+
+    def set_path(self, path: list[Hub]) -> None:
+        self._path = path
+
+    def get_path(self) -> list[Hub]:
+        return self._path

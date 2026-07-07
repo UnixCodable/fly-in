@@ -12,6 +12,7 @@
 
 from sources.components.map_objects import Connection, Hub
 from sources.parser import GlobalParser
+import math
 
 
 class Algorithm():
@@ -22,14 +23,25 @@ class Algorithm():
         self.paths: list[list[Hub]] = []
 
     def _h_path(self, next_hub: Hub):
+        weight = 0
+        pos = int(next_hub.g_pos / 10)
+        overflow = len([p for p in self.paths if len(p) >= pos and p[pos - 1] == next_hub])
+        if overflow > next_hub.max_drones:
+            if next_hub.zone == "restricted":
+                weight += (overflow - next_hub.max_drones) * 2
+            else:
+                weight += overflow - next_hub.max_drones
+        elif next_hub.zone == "restricted":
+            weight += 1
+        if next_hub.zone == "priority":
+            weight -= 1
         h_diff = (self.end_hub.coordinates[0] - next_hub.coordinates[0],
                   self.end_hub.coordinates[1] - next_hub.coordinates[1])
-        next_hub.h_pos = (h_diff[0] ** 2) + (h_diff[1] ** 2)
+        next_hub.h_pos = (h_diff[0] * 10) + (h_diff[1] * 10) + (weight * 10)
 
     def _g_path(self, current_hub: Hub, next_hub: Hub):
         g_pos = int((current_hub.g_pos / 10) + 1)
-        wait = len([p[g_pos] for p in self.paths if len(p) > g_pos and p[g_pos] == next_hub])
-        next_hub.g_pos = int((g_pos + wait) * 10)
+        next_hub.g_pos = int((g_pos) * 10)
 
     def _f_path(self, next_hub: Hub):
         next_hub.f_pos = next_hub.h_pos + next_hub.g_pos

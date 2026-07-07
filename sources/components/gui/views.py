@@ -15,7 +15,7 @@ from time import sleep, time
 import pygame as pg
 
 from sources.components.algorithms.a_star import Algorithm
-from sources.components.map_objects import Hub
+from sources.components.map_objects import Drone, Hub
 
 from ...parser import GlobalParser, read_map
 from typing import Optional, Union
@@ -391,22 +391,52 @@ class Game(View):
         drones = []
         for nb in range(self.object.total_drone):
             path = algorithm.run()
-            drones.append((f"D{nb}", path))
-        [print(d[0], [a.name for a in d[1]]) for d in drones]
+            drones.append(Drone(f"D{nb}", self.object.get_start_hub(), path))
         return drones
 
     def _execute_turns(self):
-        moves = []
-        for drone in self.drones:
-            drone[1][0].occupant += 1
-            moves.append(drone[0], drone[1][0])
-            drone[1].pop(0)
+        ended = []
+
+        with open("output.txt", "w") as file:
+            pass
+        while len(ended) < len(self.drones):
+            for drone in self.drones:
+                path = drone.get_path()
+                if path == []:
+                    if drone not in ended:
+                        ended.append(drone)
+                    continue
+                existant = [d for d in self.drones if d.get_current_pos() == path[0]]
+                if len(existant) < path[0].max_drones or path[0].hub_type == "end_hub":
+                    with open("output.txt", "a") as file:
+                        file.write(f"{drone.id}-{path[0].name} ")
+                    drone.set_current_pos(path.pop(0))
+                    drone.set_path(path)
+                else:
+                    continue
+            with open("output.txt", "a") as file:
+                file.write("\n")
+
+    def _read_output(self):
+        line_number = 0
+        with open("output.txt", "r") as file:
+            lines = file.readlines()
+            while True:
+                line = lines[line_number].strip().split()
+                if line_number < len(lines) - 1:
+                    line_number += 1
+                yield [li.split("-") for li in line]
 
     def launch(self) -> None:
 
         self.running = True
-        self.drones: list[tuple[str, list[Hub]]] = self._get_drones()
-        # turn = self._execute_turns()
+        self.drones: list[Drone] = self._get_drones()
+        self._execute_turns()
+
+        drone_asset = pg.image.load("assets/gui/drone.png").convert_alpha()
+        drone_asset = pg.transform.smoothscale(drone_asset, scale_size(0.04, 0.04))
+        moves = self._read_output()
+        last_time = 0.0
 
         while self.running:
             Window.animated_background()
@@ -441,6 +471,20 @@ class Game(View):
                                color,
                                game_pos,
                                scale_text(0.04))
+
+            if time() > (last_time + 1.2):
+                drone_moves = next(moves)
+                last_time = time()
+            for drone in drone_moves:
+                hub = self.object.get_hub(drone[1])
+                drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
+                                      self.p_y + (hub.coordinates[1] / 6))
+
+                # while drone_pos != hub.coordinates:
+                if all(a < b for a, b in zip(drone_pos, Window.surface.get_clip())):
+                    eraser = Window.surface.subsurface(pg.Rect(drone_pos, scale_size(0.04, 0.04)))
+                    Window.surface.blit(eraser.copy(), drone_pos)
+                Window.surface.blit(drone_asset, drone_pos)
 
             self._get_events()
             pg.display.update()
