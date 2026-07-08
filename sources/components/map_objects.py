@@ -18,6 +18,16 @@ class Connection(BaseModel):
     second_zone: str = Field(max_length=30, pattern=r"^([a-zA-Z0-9_]+)$")
     max_link:    int = Field(gt=0)
     line:        int = Field(ge=0)
+    passages:    int = Field(default=0)
+
+    def reset_passages(self):
+        self.passages = 0
+
+    def set_passages(self):
+        self.passages += 1
+
+    def get_passages(self):
+        return self.passages
 
 
 class Hub(BaseModel, arbitrary_types_allowed=True):

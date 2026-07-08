@@ -10,6 +10,7 @@
 #                                                                             #
 # *************************************************************************** #
 
+from typing import Optional, Union
 from sources.components.map_objects import Connection, Hub
 from sources.parser import GlobalParser
 
@@ -21,7 +22,7 @@ class Algorithm():
         self.end_hub: Hub = self.map.get_end_hub()
         self.paths: list[list[Hub]] = []
 
-    def _h_path(self, next_hub: Hub):
+    def _h_path(self, connection: Connection, next_hub: Hub):
         weight = 0
         pos = int(next_hub.g_pos / 10)
         overflow = len([p for p in self.paths if len(p) >= pos and p[pos - 1] == next_hub])
@@ -34,6 +35,9 @@ class Algorithm():
             weight += 1
         if next_hub.zone == "priority":
             weight -= 1
+        overflow = connection.get_passages()
+        if overflow > connection.max_link:
+            weight += overflow - connection.max_link
         h_diff = (self.end_hub.coordinates[0] - next_hub.coordinates[0],
                   self.end_hub.coordinates[1] - next_hub.coordinates[1])
         next_hub.h_pos = (h_diff[0] * 10) + (h_diff[1] * 10) + (weight * 10)
@@ -45,7 +49,7 @@ class Algorithm():
     def _f_path(self, next_hub: Hub):
         next_hub.f_pos = next_hub.h_pos + next_hub.g_pos
 
-    def _find_connections(self, current_hub: Hub) -> list[Hub]:
+    def _find_adjacent(self, current_hub: Hub) -> list[Hub]:
         available = []
         for connection in self.map.connections:
             if connection.first_zone == current_hub.name:
@@ -63,19 +67,20 @@ class Algorithm():
             current = sorted(opened, key=lambda item: item.f_pos)[0]
             closed.append(current)
             opened.pop(opened.index(current))
-            connected = self._find_connections(current)
-            for c in connected:
+            adjacent = self._find_adjacent(current)
+            for c in adjacent:
+                connection = self.map.get_connection(current, c)
                 if c in closed or c.zone == "blocked":
                     continue
                 if c not in opened:
                     self._g_path(current, c)
-                    self._h_path(c)
+                    self._h_path(connection, c)
                     self._f_path(c)
                     c.parent = current.name
                     opened.append(c)
                 elif c in opened:
                     self._g_path(current, c)
-                    self._h_path(c)
+                    self._h_path(connection, c)
                     self._f_path(c)
         current = self.end_hub
         while current != self.start_hub:

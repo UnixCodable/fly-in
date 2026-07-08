@@ -48,7 +48,7 @@ class View(ABC):
                      scaled_pos: tuple[int, int],
                      color: pg.Color = pg.Color(255, 255, 255)):
 
-        font = pg.Font(path, scaled_text)
+        font = pg.font.Font(path, scaled_text)
         text = font.render(text,  True, color)
         Window.surface.blit(text, scaled_pos)
 
@@ -234,7 +234,7 @@ class MapSelectionView(View):
                 if event.type == ViewAction.PREVIEW_GAME.value:
                     self.preview = read_map(event.path)
                 elif event.type == ViewAction.GAME.value:
-                    pg.event.post(pg.Event(event.type,
+                    pg.event.post(pg.event.Event(event.type,
                                            {"objects": self.preview}))
                     self.running = False
                 else:
@@ -374,7 +374,7 @@ class Game(View):
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = True
                 if event.key == pg.K_ESCAPE:
-                    pg.event.post(pg.Event(ViewAction.MENU.value))
+                    pg.event.post(pg.event.Event(ViewAction.MENU.value))
                     self.running = False
             if event.type == pg.KEYUP:
                 if event.key == pg.K_LEFT or event.key == pg.K_a:
@@ -407,6 +407,7 @@ class Game(View):
                         ended.append(drone)
                     continue
                 existant = [d for d in self.drones if d.get_current_pos() == path[0]]
+                connection = self.object.get_connection(drone.get_current_pos(), path[0])
                 if len(existant) < path[0].max_drones or path[0].hub_type == "end_hub":
                     with open("output.txt", "a") as file:
                         file.write(f"{drone.id}-{path[0].name} ")
@@ -480,7 +481,6 @@ class Game(View):
                 drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
                                       self.p_y + (hub.coordinates[1] / 6))
 
-                # while drone_pos != hub.coordinates:
                 if all(a < b for a, b in zip(drone_pos, Window.surface.get_clip())):
                     eraser = Window.surface.subsurface(pg.Rect(drone_pos, scale_size(0.04, 0.04)))
                     Window.surface.blit(eraser.copy(), drone_pos)

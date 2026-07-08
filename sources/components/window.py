@@ -68,9 +68,9 @@ class Window():
                          (cls.width * 0.5, cls.height * 0.3 + cls.drone_pos_y))
         if cls.drone_up is False:
             cls.drone_pos_y -= 1
-            if cls.drone_pos_y <= -int(cls.drone.height * 0.025):
+            if cls.drone_pos_y <= -int(cls.drone.get_height() * 0.025):
                 cls.drone_up = True
         elif cls.drone_up is True:
             cls.drone_pos_y += 1
-            if cls.drone_pos_y >= int(cls.drone.height * 0.025):
+            if cls.drone_pos_y >= int(cls.drone.get_height() * 0.025):
                 cls.drone_up = False

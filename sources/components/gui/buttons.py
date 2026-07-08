@@ -73,7 +73,7 @@ class MenuButton(Button):
 
         self.color = pg.Color(255, 255, 255)
         self.color_hover = pg.Color(255, 228, 54)
-        self.font = pg.Font("assets/fonts/Starjhol.ttf", scale_text(0.025))
+        self.font = pg.font.Font("assets/fonts/Starjhol.ttf", scale_text(0.025))
 
     def render(self) -> None:
 
@@ -106,7 +106,7 @@ class MenuButton(Button):
             for event in pg.event.get():
                 if event.type == pg.MOUSEBUTTONUP:
                     if event.button == 1:
-                        pg.event.post(pg.Event(self.action.value))
+                        pg.event.post(pg.event.Event(self.action.value))
                         pg.mouse.set_cursor(self.arrow_cursor)
 
         elif self.clickable is True:
@@ -120,7 +120,7 @@ class SquareButton(Button):
 
         super().__init__(pos, tag, scale_size(0.02, 0.02), action)
 
-        self.font = pg.Font("assets/fonts/Oswald.ttf", scale_text(0.015))
+        self.font = pg.font.Font("assets/fonts/Oswald.ttf", scale_text(0.015))
         self.color = pg.Color(255, 255, 255)
         self.color_hover = pg.Color(255, 228, 54)
 
@@ -152,7 +152,7 @@ class SquareButton(Button):
             for event in pg.event.get():
                 if event.type == pg.MOUSEBUTTONUP:
                     if event.button == 1:
-                        pg.event.post(pg.Event(self.action.value))
+                        pg.event.post(pg.event.Event(self.action.value))
 
         elif self.clickable is True:
             self.clickable = False
@@ -171,8 +171,8 @@ class MapSelectionButton(Button):
         self.path_tag = path
         self.color = pg.Color(255, 255, 255)
         self.color_hover = pg.Color(255, 228, 54)
-        self.title_font = pg.Font("assets/fonts/Oswald.ttf", scale_text(0.02))
-        self.path_font = pg.Font("assets/fonts/Oswald.ttf", scale_text(0.015))
+        self.title_font = pg.font.Font("assets/fonts/Oswald.ttf", scale_text(0.02))
+        self.path_font = pg.font.Font("assets/fonts/Oswald.ttf", scale_text(0.015))
 
     def render(self) -> None:
 
@@ -198,9 +198,9 @@ class MapSelectionButton(Button):
 
             for event in pg.event.get(pg.MOUSEWHEEL):
                 if event.y < 0:
-                    pg.event.post(pg.Event(Action.SCROLL_DOWN.value))
+                    pg.event.post(pg.event.Event(Action.SCROLL_DOWN.value))
                 if event.y > 0:
-                    pg.event.post(pg.Event(Action.SCROLL_UP.value))
+                    pg.event.post(pg.event.Event(Action.SCROLL_UP.value))
 
             if self.rect.collidepoint(mouse):
 
@@ -218,7 +218,7 @@ class MapSelectionButton(Button):
 
                 for event in pg.event.get(pg.MOUSEBUTTONUP):
                     if event.button == 1:
-                        pg.event.post(pg.Event(self.action.value,
+                        pg.event.post(pg.event.Event(self.action.value,
                                                {"path": self.path_tag}))
 
             elif self.clickable is True:
@@ -234,7 +234,7 @@ class MapPlayButton(Button):
 
         self.color = pg.Color(0, 0, 0)
         self.color_hover = pg.Color(235, 33, 46)
-        self.font = pg.Font("assets/fonts/Starjhol.ttf", scale_text(0.025))
+        self.font = pg.font.Font("assets/fonts/Starjhol.ttf", scale_text(0.025))
 
     def render(self) -> None:
 
@@ -267,7 +267,7 @@ class MapPlayButton(Button):
             for event in pg.event.get():
                 if event.type == pg.MOUSEBUTTONUP:
                     if event.button == 1:
-                        pg.event.post(pg.Event(self.action.value))
+                        pg.event.post(pg.event.Event(self.action.value))
                         pg.mouse.set_cursor(self.arrow_cursor)
 
         elif self.clickable is True:
