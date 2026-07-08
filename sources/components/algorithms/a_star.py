@@ -6,13 +6,12 @@
 #   By: lbordana <lbordana@student.42mulhouse.fr>   +#+  +:+       +#+        #
 #                                                 +#+#+#+#+#+   +#+           #
 #   Created: 2026/07/07 00:54:06 by lbordana           #+#    #+#             #
-#   Updated: 2026/07/07 03:53:26 by lbordana          ###   ########.fr       #
+#   Updated: 2026/07/08 11:17:18 by lbordana          ###   ########.fr       #
 #                                                                             #
 # *************************************************************************** #
 
 from sources.components.map_objects import Connection, Hub
 from sources.parser import GlobalParser
-import math
 
 
 class Algorithm():
