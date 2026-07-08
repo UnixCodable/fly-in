@@ -34,8 +34,10 @@ class Window():
     stars = pg.image.load("assets/gui/background.png").convert()
     stars = pg.transform.smoothscale(stars, surface.get_size())
     drone = pg.image.load("assets/gui/drone.png").convert_alpha()
-    drone = pg.transform.smoothscale(drone, ((drone.get_width() * width) / 3840,
-                                             (drone.get_height() * height) / 2160))
+    drone = pg.transform.smoothscale(
+        drone,
+        ((drone.get_width() * width) / 3840,
+         (drone.get_height() * height) / 2160))
 
     @classmethod
     def rewrite(cls, new_config: dict, reload_surface: bool = True) -> None:
