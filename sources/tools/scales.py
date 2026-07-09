@@ -6,11 +6,11 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/27 02:15:46 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/09 14:57:42 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/09 15:00:45 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
-from sources.components.tools.window import Window
+from sources.tools.window import Window
 
 
 def scale_size(scale_x, scale_y) -> tuple[int, int]:

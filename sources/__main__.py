@@ -13,9 +13,9 @@
 import pygame as pg
 import sys
 from pyvidplayer2 import Video
-from sources.components.tools.window import Window
-from sources.components.gui.buttons import ViewAction
-from .components.gui.views import (
+from sources.tools.window import Window
+from sources.gui.buttons import ViewAction
+from .gui.views import (
         Cinematics,
         MenuView,
         SettingsView,

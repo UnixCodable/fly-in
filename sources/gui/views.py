@@ -14,20 +14,20 @@ import sys
 from time import time
 import pygame as pg
 
-from sources.components.game.algorithm import Algorithm
-from sources.components.game.map_objects import Drone
+from sources.game.algorithm import Algorithm
+from sources.game.map_objects import Drone
 
 from ..tools.parser import GlobalParser, read_map
 from typing import Optional, Union
 from pyvidplayer2 import Video
 from abc import ABC, abstractmethod
-from sources.components.gui.buttons import (Action,
-                                            ButtonListMapSelection,
-                                            ButtonListMenu,
-                                            ButtonListSettings,
-                                            ViewAction)
-from sources.components.tools.scales import scale_text, scale_pos, scale_size
-from sources.components.tools.window import Window
+from sources.gui.buttons import (Action,
+                                 ButtonListMapSelection,
+                                 ButtonListMenu,
+                                 ButtonListSettings,
+                                 ViewAction)
+from sources.tools.scales import scale_text, scale_pos, scale_size
+from sources.tools.window import Window
 
 
 class View(ABC):

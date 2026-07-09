@@ -15,8 +15,8 @@ import os
 
 from enum import Enum
 from abc import ABC, abstractmethod
-from sources.components.tools.window import Window
-from sources.components.tools.scales import scale_size, scale_pos, scale_text
+from sources.tools.window import Window
+from sources.tools.scales import scale_size, scale_pos, scale_text
 
 
 class Action(Enum):
