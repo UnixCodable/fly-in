@@ -408,12 +408,13 @@ class Game(View):
                     continue
                 existant = [d for d in self.drones
                             if d.get_current_pos() == path[0]]
-                # connection = self.object.get_connection(
-                # drone.get_current_pos(), path[0])
+                connection = self.object.get_connection(
+                    drone.get_current_pos(), path[0])
                 if (len(existant) < path[0].max_drones
                         or path[0].hub_type == "end_hub"):
                     with open("output.txt", "a") as file:
                         file.write(f"{drone.id}-{path[0].name} ")
+                    drone.set_last_pos(drone.get_current_pos())  # REPRENDRE ICI
                     drone.set_current_pos(path.pop(0))
                     drone.set_path(path)
                 else:

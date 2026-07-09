@@ -47,6 +47,7 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
 class Drone():
     def __init__(self, id: str, current_pos: Hub, path: list[Hub]) -> None:
         self.id = id
+        self._last_pos = current_pos
         self._current_pos = current_pos
         self._path: list[Hub] = path
 
@@ -55,6 +56,12 @@ class Drone():
 
     def get_current_pos(self) -> Hub:
         return self._current_pos
+
+    def set_last_pos(self, current_pos: Hub) -> None:
+        self._last_pos = current_pos
+    
+    def get_last_pos(self) -> Hub:
+        return self._last_pos
 
     def set_path(self, path: list[Hub]) -> None:
         self._path = path
