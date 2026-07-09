@@ -15,7 +15,7 @@ import os
 
 from enum import Enum
 from abc import ABC, abstractmethod
-from sources.visualizer import Window
+from sources.components.tools.window import Window
 from sources.components.tools.scales import scale_size, scale_pos, scale_text
 
 
@@ -73,7 +73,8 @@ class MenuButton(Button):
 
         self.color = pg.Color(255, 255, 255)
         self.color_hover = pg.Color(255, 228, 54)
-        self.font = pg.font.Font("assets/fonts/Starjhol.ttf", scale_text(0.025))
+        self.font = pg.font.Font("assets/fonts/Starjhol.ttf",
+                                 scale_text(0.025))
 
     def render(self) -> None:
 
@@ -171,8 +172,10 @@ class MapSelectionButton(Button):
         self.path_tag = path
         self.color = pg.Color(255, 255, 255)
         self.color_hover = pg.Color(255, 228, 54)
-        self.title_font = pg.font.Font("assets/fonts/Oswald.ttf", scale_text(0.02))
-        self.path_font = pg.font.Font("assets/fonts/Oswald.ttf", scale_text(0.015))
+        self.title_font = pg.font.Font("assets/fonts/Oswald.ttf",
+                                       scale_text(0.02))
+        self.path_font = pg.font.Font("assets/fonts/Oswald.ttf",
+                                      scale_text(0.015))
 
     def render(self) -> None:
 
@@ -219,7 +222,7 @@ class MapSelectionButton(Button):
                 for event in pg.event.get(pg.MOUSEBUTTONUP):
                     if event.button == 1:
                         pg.event.post(pg.event.Event(self.action.value,
-                                               {"path": self.path_tag}))
+                                                     {"path": self.path_tag}))
 
             elif self.clickable is True:
                 self.clickable = False
@@ -234,7 +237,8 @@ class MapPlayButton(Button):
 
         self.color = pg.Color(0, 0, 0)
         self.color_hover = pg.Color(235, 33, 46)
-        self.font = pg.font.Font("assets/fonts/Starjhol.ttf", scale_text(0.025))
+        self.font = pg.font.Font("assets/fonts/Starjhol.ttf",
+                                 scale_text(0.025))
 
     def render(self) -> None:
 

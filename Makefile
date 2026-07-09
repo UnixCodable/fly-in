@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/02 08:09:16 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/09 13:46:35 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/09 14:53:35 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -14,10 +14,10 @@ install:
 	uv sync
 
 run:
-	uv run python3 -m sources.fly_in
+	uv run python3 -m sources
 
 run_no_cache:
-	uv run python3 -m sources.fly_in
+	uv run python3 -m sources
 	make clean_cache
 
 debug:

@@ -13,7 +13,7 @@
 import pygame as pg
 import sys
 from pyvidplayer2 import Video
-from sources.components.window import Window
+from sources.components.tools.window import Window
 from sources.components.gui.buttons import ViewAction
 from .components.gui.views import (
         Cinematics,
@@ -52,3 +52,8 @@ class Visualizer():
                 if event.type == ViewAction.EXIT.value:
                     pg.quit()
                     sys.exit(0)
+
+
+if __name__ == "__main__":
+    visualizer = Visualizer()
+    visualizer.start()

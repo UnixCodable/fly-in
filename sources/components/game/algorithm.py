@@ -10,8 +10,8 @@
 #                                                                             #
 # *************************************************************************** #
 
-from sources.components.map_objects import Connection, Hub
-from sources.parser import GlobalParser
+from sources.components.game.map_objects import Connection, Hub
+from sources.components.tools.parser import GlobalParser
 
 
 class Algorithm():

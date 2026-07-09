@@ -11,7 +11,7 @@
 # *************************************************************************** #
 
 import pygame as pg
-from sources.settings import Settings
+from sources.components.tools.settings import Settings
 
 pg.init()
 pg.display.set_caption("Fly-in : Echoes of the galaxy")

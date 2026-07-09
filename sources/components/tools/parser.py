@@ -12,7 +12,7 @@
 
 from pydantic import BaseModel, model_validator, Field, ValidationError
 from enum import Enum
-from .components.map_objects import Hub, Connection
+from ..game.map_objects import Hub, Connection
 from typing import Optional, Self, Union
 
 
