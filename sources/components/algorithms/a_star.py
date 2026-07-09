@@ -10,7 +10,6 @@
 #                                                                             #
 # *************************************************************************** #
 
-from typing import Optional, Union
 from sources.components.map_objects import Connection, Hub
 from sources.parser import GlobalParser
 
@@ -23,9 +22,12 @@ class Algorithm():
         self.paths: list[list[Hub]] = []
 
     def _h_path(self, connection: Connection, next_hub: Hub):
+
         weight = 0
         pos = int(next_hub.g_pos / 10)
-        overflow = len([p for p in self.paths if len(p) >= pos and p[pos - 1] == next_hub])
+        overflow = len([p for p in self.paths if len(p) >= pos
+                        and p[pos - 1] == next_hub])
+
         if overflow > next_hub.max_drones:
             if next_hub.zone == "restricted":
                 weight += (overflow - next_hub.max_drones) * 2
@@ -33,11 +35,14 @@ class Algorithm():
                 weight += overflow - next_hub.max_drones
         elif next_hub.zone == "restricted":
             weight += 1
+
         if next_hub.zone == "priority":
             weight -= 1
+
         overflow = connection.get_passages()
         if overflow > connection.max_link:
             weight += overflow - connection.max_link
+
         h_diff = (self.end_hub.coordinates[0] - next_hub.coordinates[0],
                   self.end_hub.coordinates[1] - next_hub.coordinates[1])
         next_hub.h_pos = (h_diff[0] * 10) + (h_diff[1] * 10) + (weight * 10)

@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/02 08:09:16 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/24 07:28:01 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/09 13:46:35 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -16,12 +16,19 @@ install:
 run:
 	uv run python3 -m sources.fly_in
 
+run_no_cache:
+	uv run python3 -m sources.fly_in
+	make clean_cache
+
 debug:
 	echo "wip"
 
 clean:
 	rm -rf sources/__pycache__/
 	rm -rf sources/.mypy_cache/
+
+clean_cache:
+	rm -rf */__pycache__ */*/__pycache__ */*/*/__pycache__
 
 lint:
 	python3 -m flake8 . --exclude=.venv/*

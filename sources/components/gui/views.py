@@ -11,11 +11,11 @@
 # *************************************************************************** #
 
 import sys
-from time import sleep, time
+from time import time
 import pygame as pg
 
 from sources.components.algorithms.a_star import Algorithm
-from sources.components.map_objects import Drone, Hub
+from sources.components.map_objects import Drone
 
 from ...parser import GlobalParser, read_map
 from typing import Optional, Union
@@ -234,8 +234,8 @@ class MapSelectionView(View):
                 if event.type == ViewAction.PREVIEW_GAME.value:
                     self.preview = read_map(event.path)
                 elif event.type == ViewAction.GAME.value:
-                    pg.event.post(pg.event.Event(event.type,
-                                           {"objects": self.preview}))
+                    pg.event.post(pg.event.Event(
+                        event.type, {"objects": self.preview}))
                     self.running = False
                 else:
                     pg.event.post(event)
@@ -406,9 +406,12 @@ class Game(View):
                     if drone not in ended:
                         ended.append(drone)
                     continue
-                existant = [d for d in self.drones if d.get_current_pos() == path[0]]
-                connection = self.object.get_connection(drone.get_current_pos(), path[0])
-                if len(existant) < path[0].max_drones or path[0].hub_type == "end_hub":
+                existant = [d for d in self.drones
+                            if d.get_current_pos() == path[0]]
+                # connection = self.object.get_connection(
+                # drone.get_current_pos(), path[0])
+                if (len(existant) < path[0].max_drones
+                        or path[0].hub_type == "end_hub"):
                     with open("output.txt", "a") as file:
                         file.write(f"{drone.id}-{path[0].name} ")
                     drone.set_current_pos(path.pop(0))
@@ -435,7 +438,8 @@ class Game(View):
         self._execute_turns()
 
         drone_asset = pg.image.load("assets/gui/drone.png").convert_alpha()
-        drone_asset = pg.transform.smoothscale(drone_asset, scale_size(0.04, 0.04))
+        drone_asset = pg.transform.smoothscale(drone_asset,
+                                               scale_size(0.04, 0.04))
         moves = self._read_output()
         last_time = 0.0
 
@@ -481,8 +485,10 @@ class Game(View):
                 drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
                                       self.p_y + (hub.coordinates[1] / 6))
 
-                if all(a < b for a, b in zip(drone_pos, Window.surface.get_clip())):
-                    eraser = Window.surface.subsurface(pg.Rect(drone_pos, scale_size(0.04, 0.04)))
+                if all(a < b for a, b in zip(drone_pos,
+                                             Window.surface.get_clip())):
+                    eraser = Window.surface.subsurface(
+                        pg.Rect(drone_pos, scale_size(0.04, 0.04)))
                     Window.surface.blit(eraser.copy(), drone_pos)
                 Window.surface.blit(drone_asset, drone_pos)
 
