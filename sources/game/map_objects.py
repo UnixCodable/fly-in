@@ -24,8 +24,8 @@ class Connection(BaseModel):
     def reset_passages(self):
         self.passages = 0
 
-    def set_passages(self):
-        self.passages += 1
+    def set_passages(self, value):
+        self.passages += value
 
     def get_passages(self):
         return self.passages

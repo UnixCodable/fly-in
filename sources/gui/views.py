@@ -414,7 +414,8 @@ class Game(View):
 
                 if drone.is_restricted():
                     connection = self.object.get_connection(drone.get_last_pos(), drone.get_current_pos())
-                    connection.set_restriction(False)
+                    if connection.get_passages() == 1:
+                        connection.set_restriction(False)
                     drone.set_restriction(False)
                     moves.append((drone, drone.get_current_pos()))
                     continue
@@ -437,7 +438,7 @@ class Game(View):
                 path[0].add_occupant()
                 drone.set_current_pos(path[0])
                 path.pop(0)
-                connection.set_passages()
+                connection.set_passages(1)
 
             for m in moves:
                 if type(m[1]) is Hub:
