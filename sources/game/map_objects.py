@@ -19,6 +19,7 @@ class Connection(BaseModel):
     max_link:    int = Field(gt=0)
     line:        int = Field(ge=0)
     passages:    int = Field(default=0)
+    restricted: bool = Field(default=False)
 
     def reset_passages(self):
         self.passages = 0
@@ -28,6 +29,17 @@ class Connection(BaseModel):
 
     def get_passages(self):
         return self.passages
+
+    def is_restricted(self):
+        return self.restricted
+
+    def set_restriction(self, boolean: bool):
+        self.restricted = boolean
+
+    def is_full(self) -> bool:
+        if self.passages == self.max_link:
+            return True
+        return False
 
 
 class Hub(BaseModel, arbitrary_types_allowed=True):
@@ -42,14 +54,27 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     h_pos:       int = Field(default=0)
     f_pos:       int = Field(default=0)
     parent:      str = Field(default="")
+    occupation:  int = Field(default=0)
+
+    def add_occupant(self):
+        self.occupation += 1
+
+    def remove_occupant(self):
+        self.occupation -= 1
+
+    def is_full(self) -> bool:
+        if self.occupation == self.max_drones:
+            return True
+        return False
 
 
 class Drone():
     def __init__(self, id: str, current_pos: Hub, path: list[Hub]) -> None:
         self.id = id
         self._last_pos = current_pos
-        self._current_pos = current_pos
+        self._current_pos: Hub = current_pos
         self._path: list[Hub] = path
+        self._restricted = False
 
     def set_current_pos(self, current_pos: Hub) -> None:
         self._current_pos = current_pos
@@ -59,7 +84,7 @@ class Drone():
 
     def set_last_pos(self, current_pos: Hub) -> None:
         self._last_pos = current_pos
-    
+
     def get_last_pos(self) -> Hub:
         return self._last_pos
 
@@ -68,3 +93,11 @@ class Drone():
 
     def get_path(self) -> list[Hub]:
         return self._path
+
+    def set_restriction(self, boolean: bool):
+        self._restricted = boolean
+
+    def is_restricted(self):
+        if self._restricted is True:
+            return True
+        return False

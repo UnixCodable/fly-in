@@ -12,6 +12,7 @@
 
 from sources.game.map_objects import Connection, Hub
 from sources.tools.parser import GlobalParser
+from math import sqrt
 
 
 class Algorithm():
@@ -34,7 +35,7 @@ class Algorithm():
             else:
                 weight += overflow - next_hub.max_drones
         elif next_hub.zone == "restricted":
-            weight += 1
+            weight += 2
 
         if next_hub.zone == "priority":
             weight -= 1
@@ -45,7 +46,7 @@ class Algorithm():
 
         h_diff = (self.end_hub.coordinates[0] - next_hub.coordinates[0],
                   self.end_hub.coordinates[1] - next_hub.coordinates[1])
-        next_hub.h_pos = (h_diff[0] * 10) + (h_diff[1] * 10) + (weight * 10)
+        next_hub.h_pos = int(sqrt((h_diff[0] ** 2) + (h_diff[1] ** 2)) * 10) + (weight * 10)
 
     def _g_path(self, current_hub: Hub, next_hub: Hub):
         g_pos = int((current_hub.g_pos / 10) + 1)

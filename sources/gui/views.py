@@ -15,7 +15,7 @@ from time import time
 import pygame as pg
 
 from sources.game.algorithm import Algorithm
-from sources.game.map_objects import Drone
+from sources.game.map_objects import Connection, Drone, Hub
 
 from ..tools.parser import GlobalParser, read_map
 from typing import Optional, Union
@@ -51,6 +51,7 @@ class View(ABC):
         font = pg.font.Font(path, scaled_text)
         text = font.render(text,  True, color)
         Window.surface.blit(text, scaled_pos)
+        return text
 
 
 class Cinematics(View):
@@ -396,53 +397,73 @@ class Game(View):
 
     def _execute_turns(self):
         ended = []
+        turn = 0
 
-        with open("output.txt", "w") as file:
-            pass
-        while len(ended) < len(self.drones):
+        yield
+        while len(ended) != len(self.drones):
+            turn += 1
+            moves: list[tuple[Drone, Connection | Hub]] = []
+            print(f"Turn {turn} : ", end="")
+
             for drone in self.drones:
                 path = drone.get_path()
                 if path == []:
                     if drone not in ended:
                         ended.append(drone)
                     continue
-                existant = [d for d in self.drones
-                            if d.get_current_pos() == path[0]]
+
+                if drone.is_restricted():
+                    connection = self.object.get_connection(drone.get_last_pos(), drone.get_current_pos())
+                    connection.set_restriction(False)
+                    drone.set_restriction(False)
+                    moves.append((drone, drone.get_current_pos()))
+                    continue
+
                 connection = self.object.get_connection(
                     drone.get_current_pos(), path[0])
-                if (len(existant) < path[0].max_drones
-                        or path[0].hub_type == "end_hub"):
-                    with open("output.txt", "a") as file:
-                        file.write(f"{drone.id}-{path[0].name} ")
-                    drone.set_last_pos(drone.get_current_pos())  # REPRENDRE ICI
-                    drone.set_current_pos(path.pop(0))
-                    drone.set_path(path)
-                else:
-                    continue
-            with open("output.txt", "a") as file:
-                file.write("\n")
 
-    def _read_output(self):
-        line_number = 0
-        with open("output.txt", "r") as file:
-            lines = file.readlines()
-            while True:
-                line = lines[line_number].strip().split()
-                if line_number < len(lines) - 1:
-                    line_number += 1
-                yield [li.split("-") for li in line]
+                if path[0].is_full() or connection.is_full():
+                    continue
+
+                if path[0].zone == "restricted":
+                    moves.append((drone, connection))
+                    drone.set_restriction(True)
+                    connection.set_restriction(True)
+                else:
+                    moves.append((drone, path[0]))
+
+                drone.get_current_pos().remove_occupant()
+                drone.set_last_pos(drone.get_current_pos())
+                path[0].add_occupant()
+                drone.set_current_pos(path[0])
+                path.pop(0)
+                connection.set_passages()
+
+            for m in moves:
+                if type(m[1]) is Hub:
+                    print(f"{m[0].id}-{m[1].name}",
+                          end=" " if m != moves[-1] else "\n")
+                else:
+                    print(f"{m[0].id}-{m[1].first_zone}-{m[1].second_zone}",
+                          end=" " if m != moves[-1] else "\n")
+
+            for c in self.object.connections:
+                if c.is_restricted() is False:
+                    c.reset_passages()
+
+            yield
 
     def launch(self) -> None:
 
         self.running = True
         self.drones: list[Drone] = self._get_drones()
-        self._execute_turns()
+        # initialized = False
+        turns = self._execute_turns()
+        last_time = 0.0
 
-        drone_asset = pg.image.load("assets/gui/drone.png").convert_alpha()
+        drone_asset = pg.image.load("assets/gui/drone_top.png").convert_alpha()
         drone_asset = pg.transform.smoothscale(drone_asset,
                                                scale_size(0.04, 0.04))
-        moves = self._read_output()
-        last_time = 0.0
 
         while self.running:
             Window.animated_background()
@@ -476,24 +497,44 @@ class Game(View):
                 pg.draw.circle(Window.surface,
                                color,
                                game_pos,
-                               scale_text(0.04))
+                               scale_text(0.04), 20)
+                pg.draw.circle(Window.surface,
+                               "wheat",
+                               game_pos,
+                               scale_text(0.035))
+                self._render_text("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), "black")
+                self._render_text("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), "black")
+                self._render_text("assets/fonts/Oswald.ttf", str(hub.max_drones), scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.013)), "black")
+                # Window.surface.blit(h_name_text, (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)))
+                # Window.surface.blit(h_zone_text, (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)))
+                # Window.surface.blit(h_drone_text, (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.013)))
+                
 
             if time() > (last_time + 1.2):
-                drone_moves = next(moves)
+                try:
+                    next(turns)
+                except StopIteration:
+                    pass
                 last_time = time()
-            for drone in drone_moves:
-                hub = self.object.get_hub(drone[1])
+            for drone in self.drones:
+                hub = drone.get_current_pos()
                 drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
                                       self.p_y + (hub.coordinates[1] / 6))
 
-                if all(a < b for a, b in zip(drone_pos,
-                                             Window.surface.get_clip())):
-                    eraser = Window.surface.subsurface(
-                        pg.Rect(drone_pos, scale_size(0.04, 0.04)))
-                    Window.surface.blit(eraser.copy(), drone_pos)
-                Window.surface.blit(drone_asset, drone_pos)
+                # if all(a < b for a, b in zip(drone_pos,
+                #                             Window.surface.get_clip())):
+                    # eraser = Window.surface.subsurface(
+                    #     pg.Rect(drone_pos, scale_size(0.04, 0.04)))
+                pg.draw.circle(Window.surface,
+                                "white",
+                                drone_pos,
+                                scale_text(0.03))
+                self._render_text("assets/fonts/Oswald.ttf", drone.id, scale_text(.02), (drone_pos[0] - scale_text(0.02), drone_pos[1] - scale_text(0.017)), "darkred")
+                    # Window.surface.blit(eraser.copy(), drone_pos)
+                # Window.surface.blit(drone_asset, drone_pos)
 
             self._get_events()
+            # initialized = True
             pg.display.update()
 
     def set_object(self, object: GlobalParser) -> None:
