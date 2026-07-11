@@ -12,7 +12,6 @@
 
 from sources.game.map_objects import Connection, Hub
 from sources.tools.parser import GlobalParser
-from math import sqrt
 
 
 class Algorithm():
@@ -22,38 +21,37 @@ class Algorithm():
         self.end_hub: Hub = self.map.get_end_hub()
         self.paths: list[list[Hub]] = []
 
-    def _h_path(self, connection: Connection, next_hub: Hub):
-
+    def _g_path(self, connection: Connection, current_hub: Hub, next_hub: Hub):
         weight = 0
-        pos = int(next_hub.g_pos / 10)
-        overflow = len([p for p in self.paths if len(p) >= pos
-                        and p[pos - 1] == next_hub])
 
-        if overflow > next_hub.max_drones:
+        g_pos = int((current_hub.g_pos) + 1)
+        check_same_turn = len([p for p in self.paths if len(p) >= g_pos
+                               and p[g_pos - 1] == next_hub])
+        if check_same_turn > next_hub.max_drones:
             if next_hub.zone == "restricted":
-                weight += (overflow - next_hub.max_drones) * 2
+                weight += (check_same_turn - next_hub.max_drones) * 2
             else:
-                weight += overflow - next_hub.max_drones
+                weight += check_same_turn - next_hub.max_drones
         elif next_hub.zone == "restricted":
             weight += 2
 
         if next_hub.zone == "priority":
             weight -= 1
 
-        overflow = connection.get_passages()
-        if overflow > connection.max_link:
-            weight += overflow - connection.max_link
+        check_connection_link = len([p for p in self.paths if len(p) >= g_pos
+                                     and p[g_pos - 1] == next_hub
+                                     and p[g_pos - 2] == current_hub])
+        if check_connection_link > connection.max_link:
+            if next_hub.zone == "restricted":
+                weight += (check_connection_link - connection.max_link) * 2
+            else:
+                weight += check_connection_link - connection.max_link
 
-        h_diff = (self.end_hub.coordinates[0] - next_hub.coordinates[0],
-                  self.end_hub.coordinates[1] - next_hub.coordinates[1])
-        next_hub.h_pos = int(sqrt((h_diff[0] ** 2) + (h_diff[1] ** 2)) * 10) + (weight * 10)
-
-    def _g_path(self, current_hub: Hub, next_hub: Hub):
-        g_pos = int((current_hub.g_pos / 10) + 1)
-        next_hub.g_pos = int((g_pos) * 10)
-
-    def _f_path(self, next_hub: Hub):
-        next_hub.f_pos = next_hub.h_pos + next_hub.g_pos
+        pos = int(g_pos)
+        if pos + weight <= next_hub.f_pos or next_hub.g_pos == 0:
+            next_hub.g_pos = pos
+            next_hub.f_pos = pos + weight
+            next_hub.parent = current_hub.name
 
     def _find_adjacent(self, current_hub: Hub) -> list[Hub]:
         available = []
@@ -65,32 +63,32 @@ class Algorithm():
         return available
 
     def run(self):
-        opened = []
-        closed = []
         path = []
-        opened.append(self.start_hub)
+        closed = []
+        opened = [self.start_hub]
+
         while self.end_hub not in closed:
-            current = sorted(opened, key=lambda item: item.f_pos)[0]
+
+            current = opened.pop(0)
             closed.append(current)
-            opened.pop(opened.index(current))
             adjacent = self._find_adjacent(current)
-            for c in adjacent:
-                connection = self.map.get_connection(current, c)
-                if c in closed or c.zone == "blocked":
+
+            for adj_hub in adjacent:
+                if adj_hub in closed:
                     continue
-                if c not in opened:
-                    self._g_path(current, c)
-                    self._h_path(connection, c)
-                    self._f_path(c)
-                    c.parent = current.name
-                    opened.append(c)
-                elif c in opened:
-                    self._g_path(current, c)
-                    self._h_path(connection, c)
-                    self._f_path(c)
+                connection = self.map.get_connection(current, adj_hub)
+                self._g_path(connection, current, adj_hub)
+                if adj_hub not in opened:
+                    opened.append(adj_hub)
+
         current = self.end_hub
         while current != self.start_hub:
+            adjacent = self._find_adjacent(current)
             path.append(current)
             current = self.map.get_hub(current.parent)
+
+        for h in self.map.hubs:
+            h.g_pos = 0
+
         self.paths.append(path[::-1])
         return path[::-1]

@@ -350,8 +350,6 @@ class MapSelectionView(View):
 class Game(View):
     def __init__(self):
         self.object = None
-        self.p_x = 0.1
-        self.p_y = 0.46
         self.moving_up = False
         self.moving_left = False
         self.moving_right = False
@@ -407,6 +405,7 @@ class Game(View):
 
             for drone in self.drones:
                 path = drone.get_path()
+                # print(drone.id, [p.name for p in path])
                 if path == []:
                     if drone not in ended:
                         ended.append(drone)
@@ -424,7 +423,10 @@ class Game(View):
                     drone.get_current_pos(), path[0])
 
                 if path[0].is_full() or connection.is_full():
-                    continue
+                    if path[0] == self.object.get_end_hub():
+                        pass
+                    else:
+                        continue
 
                 if path[0].zone == "restricted":
                     moves.append((drone, connection))
@@ -458,6 +460,8 @@ class Game(View):
 
         self.running = True
         self.drones: list[Drone] = self._get_drones()
+        self.p_x = 0.1
+        self.p_y = 0.46
         # initialized = False
         turns = self._execute_turns()
         last_time = 0.0
@@ -506,12 +510,8 @@ class Game(View):
                 self._render_text("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), "black")
                 self._render_text("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), "black")
                 self._render_text("assets/fonts/Oswald.ttf", str(hub.max_drones), scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.013)), "black")
-                # Window.surface.blit(h_name_text, (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)))
-                # Window.surface.blit(h_zone_text, (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)))
-                # Window.surface.blit(h_drone_text, (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.013)))
-                
 
-            if time() > (last_time + 1.2):
+            if time() > (last_time + 0.4):
                 try:
                     next(turns)
                 except StopIteration:
@@ -522,20 +522,13 @@ class Game(View):
                 drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
                                       self.p_y + (hub.coordinates[1] / 6))
 
-                # if all(a < b for a, b in zip(drone_pos,
-                #                             Window.surface.get_clip())):
-                    # eraser = Window.surface.subsurface(
-                    #     pg.Rect(drone_pos, scale_size(0.04, 0.04)))
                 pg.draw.circle(Window.surface,
-                                "white",
-                                drone_pos,
-                                scale_text(0.03))
+                               "white",
+                               drone_pos,
+                               scale_text(0.03))
                 self._render_text("assets/fonts/Oswald.ttf", drone.id, scale_text(.02), (drone_pos[0] - scale_text(0.02), drone_pos[1] - scale_text(0.017)), "darkred")
-                    # Window.surface.blit(eraser.copy(), drone_pos)
-                # Window.surface.blit(drone_asset, drone_pos)
 
             self._get_events()
-            # initialized = True
             pg.display.update()
 
     def set_object(self, object: GlobalParser) -> None:
