@@ -1,0 +1,13 @@
+nb_drones: 3
+
+start_hub: start 0 0 [color=green max_drones=3]
+hub: junction 1 0 [color=yellow max_drones=3]
+hub: restricted_path 2 -1 [zone=restricted color=gray]
+hub: normal_path 2 1 [color=gray]
+end_hub: goal 3 0 [color=rainbow max_drones=3]
+
+connection: start-junction
+connection: junction-normal_path
+connection: junction-restricted_path
+connection: normal_path-goal
+connection: restricted_path-goal

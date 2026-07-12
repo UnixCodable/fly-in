@@ -1,0 +1,22 @@
+# EDGE CASE: Capacity boundary test for <= vs < condition
+# Tests restricted hub overflow when incoming=N, outbound=N, occupants=N
+# Forces multiple drones simultaneously in transit to max=2 restricted hub
+# While the hub is already full with drones that are predicted to leave
+
+nb_drones: 6
+
+start_hub: start 0 0 [max_drones=6]
+end_hub: end 6 0 [max_drones=6]
+
+# Two parallel feeders -> restricted bottleneck -> single exit -> end
+hub: feeder1 1 1 [max_drones=3]
+hub: feeder2 1 -1 [max_drones=3]
+hub: bottleneck 3 0 [zone=restricted max_drones=2]
+hub: exit_gate 5 0 [max_drones=1]
+
+connection: start-feeder1 [max_link_capacity=3]
+connection: start-feeder2 [max_link_capacity=3]
+connection: feeder1-bottleneck [max_link_capacity=2]
+connection: feeder2-bottleneck [max_link_capacity=2]
+connection: bottleneck-exit_gate
+connection: exit_gate-end

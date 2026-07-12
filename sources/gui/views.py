@@ -10,6 +10,7 @@
 #                                                                             #
 # *************************************************************************** #
 
+from sqlite3 import connect
 import sys
 from time import time
 import pygame as pg
@@ -403,6 +404,10 @@ class Game(View):
             moves: list[tuple[Drone, Connection | Hub]] = []
             print(f"Turn {turn} : ", end="")
 
+            for c in self.object.connections:
+                if c.is_restricted() is False:
+                    c.reset_passages()
+
             for drone in self.drones:
                 path = drone.get_path()
                 # print(drone.id, [p.name for p in path])
@@ -413,8 +418,7 @@ class Game(View):
 
                 if drone.is_restricted():
                     connection = self.object.get_connection(drone.get_last_pos(), drone.get_current_pos())
-                    if connection.get_passages() == 1:
-                        connection.set_restriction(False)
+                    connection.set_restriction(False)
                     drone.set_restriction(False)
                     moves.append((drone, drone.get_current_pos()))
                     continue
@@ -423,6 +427,10 @@ class Game(View):
                     drone.get_current_pos(), path[0])
 
                 if path[0].is_full() or connection.is_full():
+                    # if connection.is_full():
+                    #     print(connection.first_zone + "-" + connection.second_zone, connection.get_passages(), "/", connection.max_link)
+                    # if path[0].is_full():
+                    #     print(path[0].name, path[0].occupation, "/", path[0].max_drones)
                     if path[0] == self.object.get_end_hub():
                         pass
                     else:
@@ -449,10 +457,6 @@ class Game(View):
                 else:
                     print(f"{m[0].id}-{m[1].first_zone}-{m[1].second_zone}",
                           end=" " if m != moves[-1] else "\n")
-
-            for c in self.object.connections:
-                if c.is_restricted() is False:
-                    c.reset_passages()
 
             yield
 
@@ -490,6 +494,7 @@ class Game(View):
                 zone_2_pos = scale_pos(self.p_x + (zone_2.coordinates[0] / 6),
                                        self.p_y + (zone_2.coordinates[1] / 6))
                 pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 6)
+                self._render_text("assets/fonts/Oswald.ttf", str(connection.get_passages()) + "/" + str(connection.max_link), scale_text(.01), (zone_1_pos[0] + int((zone_2_pos[0] - zone_1_pos[0]) / 2), zone_1_pos[1] + int((zone_2_pos[1] - zone_1_pos[1]) / 2)), "white")
 
             for hub in self.object.hubs:
                 game_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
@@ -509,7 +514,7 @@ class Game(View):
                                scale_text(0.035))
                 self._render_text("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), "black")
                 self._render_text("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), "black")
-                self._render_text("assets/fonts/Oswald.ttf", str(hub.max_drones), scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.013)), "black")
+                self._render_text("assets/fonts/Oswald.ttf", str(hub.occupation) + "/" + str(hub.max_drones), scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), "white")
 
             if time() > (last_time + 0.4):
                 try:
