@@ -36,23 +36,21 @@ class RenderText():
                  path: str,
                  text: str,
                  scaled_text: int,
-                 scaled_pos: tuple[int, int],
                  color: pg.Color = pg.Color(255, 255, 255)):
         self.path = path
         self.text = text
         self.scaled_text = scaled_text
-        self.scaled_pos = scaled_pos
         self.color = color
 
         self.font = pg.font.Font(path, scaled_text)
         self.render = self.font.render(self.text,  True, color)
 
-    def _blit(self, new_text: str):
-        if new_text != self.text:
+    def blit(self, scaled_pos: tuple[int, int], new_text: str = None):
+        if new_text is not None and new_text != self.text:
             self.text = new_text
             self.render = self.font.render(self.text, True, self.color)
 
-        Window.surface.blit(self.render, self.scaled_pos)
+        Window.surface.blit(self.render, scaled_pos)
 
 
 class View(ABC):
@@ -65,18 +63,6 @@ class View(ABC):
     @abstractmethod
     def launch(self) -> None:
         pass
-
-    def _render_text(self,
-                     path: str,
-                     text: str,
-                     scaled_text: int,
-                     scaled_pos: tuple[int, int],
-                     color: pg.Color = pg.Color(255, 255, 255)):
-
-        font = pg.font.Font(path, scaled_text)
-        text = font.render(text,  True, color)
-        Window.surface.blit(text, scaled_pos)
-        return text
 
 
 class Cinematics(View):
@@ -129,22 +115,23 @@ class MenuView(View):
     def launch(self) -> None:
         self.buttons = ButtonListMenu()
         self.running = True
+        title = RenderText(
+                    "assets/fonts/Starjhol.ttf",
+                    "Fly in",
+                    scale_text(0.06)
+                )
+        footer = RenderText(
+                    "assets/fonts/Oswald.ttf",
+                    "Made with force by Lucas Bordanave, from 42 Mulhouse",
+                    scale_text(0.018)
+                )
+
         pg.mixer.Channel(0).play(pg.mixer.Sound("assets/sound/menu.wav"), 1000)
         while self.running:
             Window.animated_background()
             Window.animated_drone()
-            self._render_text(
-                "assets/fonts/Starjhol.ttf",
-                "Fly in",
-                scale_text(0.06),
-                scale_pos(0.385, 0.03)
-            )
-            self._render_text(
-                "assets/fonts/Oswald.ttf",
-                "Made with force by Lucas Bordanave, from 42 Mulhouse",
-                scale_text(0.018),
-                scale_pos(0.313, 0.92)
-            )
+            title.blit(scale_pos(0.385, 0.03))
+            footer.blit(scale_pos(0.313, 0.92))
             self.buttons.menu_button_play.render()
             self.buttons.menu_button_settings.render()
             self.buttons.menu_button_exit.render()
@@ -200,39 +187,34 @@ class SettingsView(View):
     def launch(self) -> None:
         self.buttons = ButtonListSettings()
         self.running = True
+        sound_indicator = RenderText(
+                        "assets/fonts/Starjhol.ttf",
+                        "+" * Window.data['sound'],
+                        scale_text(0.025)
+                    )
+        resolution_title = RenderText(
+                        "assets/fonts/Starjhol.ttf",
+                        "resolution :",
+                        scale_text(0.015)
+                    )
+        sound_title = RenderText(
+                        "assets/fonts/Starjhol.ttf",
+                        "sound :",
+                        scale_text(0.015),
+                        scale_pos(0.105, 0.52)
+                    )
+        fullscreen_title = RenderText(
+                        "assets/fonts/Starjhol.ttf",
+                        "fullscreen ",
+                        scale_text(0.015)
+                    )
         while self.running:
             Window.animated_background()
             Window.animated_drone()
-            self._render_text(
-                "assets/fonts/Starjhol.ttf",
-                "+" * Window.data['sound'],
-                scale_text(0.025),
-                scale_pos(0.219, 0.518)
-            )
-            self._render_text(
-                "assets/fonts/Starjhol.ttf",
-                str(Window.data['resolution'])[1:-1].replace(',', ' x'),
-                scale_text(0.015),
-                scale_pos(0.26, 0.403)
-            )
-            self._render_text(
-                "assets/fonts/Starjhol.ttf",
-                "resolution :",
-                scale_text(0.015),
-                scale_pos(0.06, 0.403)
-            )
-            self._render_text(
-                "assets/fonts/Starjhol.ttf",
-                "sound :",
-                scale_text(0.015),
-                scale_pos(0.105, 0.52)
-            )
-            self._render_text(
-                "assets/fonts/Starjhol.ttf",
-                "fullscreen ",
-                scale_text(0.015),
-                scale_pos(0.23, 0.285)
-            )
+            sound_indicator.blit(scale_pos(0.219, 0.518))
+            resolution_title.blit(scale_pos(0.06, 0.403))
+            sound_title.blit(scale_pos(0.105, 0.52))
+            fullscreen_title.blit(scale_pos(0.23, 0.285))
             if Window.data["mode"] == "fullscreen":
                 self.buttons.settings_button_fullscreen_on.render()
             else:
@@ -290,36 +272,32 @@ class MapSelectionView(View):
         if self.preview is None:
             return
         if isinstance(self.preview, str):
-            self._render_text(
+            RenderText(
                 "assets/fonts/Oswald.ttf",
                 self.preview,
                 scale_text(0.013),
-                scale_pos(0.515, 0.51),
                 pg.Color(235, 33, 46)
-            )
+            ).blit(scale_pos(0.515, 0.51))
             return
 
-        self._render_text(
+        RenderText(
             "assets/fonts/Oswald.ttf",
             f"Number of drones : {self.preview.total_drone}",
             scale_text(0.015),
-            scale_pos(0.52, 0.49),
             pg.Color(0, 0, 0)
-        )
-        self._render_text(
+        ).blit(scale_pos(0.52, 0.49))
+        RenderText(
             "assets/fonts/Oswald.ttf",
             f"Number of hubs : {len(self.preview.hubs)}",
             scale_text(0.015),
-            scale_pos(0.52, 0.53),
             pg.Color(0, 0, 0)
-        )
-        self._render_text(
+        ).blit(scale_pos(0.52, 0.53))
+        RenderText(
             "assets/fonts/Oswald.ttf",
             f"Number of connections : {len(self.preview.connections)}",
             scale_text(0.015),
-            scale_pos(0.52, 0.57),
             pg.Color(0, 0, 0)
-        )
+        ).blit(scale_pos(0.52, 0.57))
 
         for hub in self.preview.hubs:
             preview_scale = scale_pos(self.p_start + (hub.coordinates[0] / 30),
@@ -497,6 +475,12 @@ class Game(View):
         drone_asset = pg.image.load("assets/gui/drone_top.png").convert_alpha()
         drone_asset = pg.transform.smoothscale(drone_asset,
                                                scale_size(0.04, 0.04))
+        initialised_text = False
+        hub_names_text = []
+        hub_zones_text = []
+        hub_occupation_text = []
+        connection_passages_text = []
+        drone_id_text = []
 
         while self.running:
             Window.animated_background()
@@ -510,7 +494,7 @@ class Game(View):
             if self.moving_right is True:
                 self.p_x += 0.01
 
-            for connection in self.object.connections:
+            for index, connection in enumerate(self.object.connections):
                 zone_1 = self.object.get_hub(connection.first_zone)
                 zone_2 = self.object.get_hub(connection.second_zone)
                 zone_1_pos = scale_pos(self.p_x + (zone_1.coordinates[0] / 6),
@@ -518,9 +502,11 @@ class Game(View):
                 zone_2_pos = scale_pos(self.p_x + (zone_2.coordinates[0] / 6),
                                        self.p_y + (zone_2.coordinates[1] / 6))
                 pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 6)
-                self._render_text("assets/fonts/Oswald.ttf", str(connection.get_passages()) + "/" + str(connection.max_link), scale_text(.01), (zone_1_pos[0] + int((zone_2_pos[0] - zone_1_pos[0]) / 2), zone_1_pos[1] + int((zone_2_pos[1] - zone_1_pos[1]) / 2)), "white")
+                if initialised_text is False:
+                    connection_passages_text.append(RenderText("assets/fonts/Oswald.ttf", str(connection.get_passages()) + "/" + str(connection.max_link), scale_text(.01), "white"))
+                connection_passages_text[index].blit((zone_1_pos[0] + int((zone_2_pos[0] - zone_1_pos[0]) / 2), zone_1_pos[1] + int((zone_2_pos[1] - zone_1_pos[1]) / 2)), str(connection.get_passages()) + "/" + str(connection.max_link))
 
-            for hub in self.object.hubs:
+            for index, hub in enumerate(self.object.hubs):
                 game_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
                                      self.p_y + (hub.coordinates[1] / 6))
                 if hub.color in pg.color.THECOLORS.keys():
@@ -536,9 +522,13 @@ class Game(View):
                                "wheat",
                                game_pos,
                                scale_text(0.035))
-                self._render_text("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), "black")
-                self._render_text("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), "black")
-                self._render_text("assets/fonts/Oswald.ttf", str(hub.occupation) + "/" + str(hub.max_drones), scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), "white")
+                if initialised_text is False:
+                    hub_names_text.append(RenderText("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), "black"))
+                    hub_zones_text.append(RenderText("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), "black"))
+                    hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.occupation) + "/" + str(hub.max_drones), scale_text(.01), "white"))
+                hub_names_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), hub.name)
+                hub_zones_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), hub.zone)
+                hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.occupation) + "/" + str(hub.max_drones))
 
             if time() > (last_time + 0.03):
                 try:
@@ -546,7 +536,7 @@ class Game(View):
                 except StopIteration:
                     pass
                 last_time = time()
-            for drone in self.drones:
+            for index, drone in enumerate(self.drones):
                 hub = drone.get_current_pos()
                 drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
                                       self.p_y + (hub.coordinates[1] / 6))
@@ -555,10 +545,13 @@ class Game(View):
                                "white",
                                drone_pos,
                                scale_text(0.03))
-                self._render_text("assets/fonts/Oswald.ttf", drone.id, scale_text(.02), (drone_pos[0] - scale_text(0.02), drone_pos[1] - scale_text(0.017)), "darkred")
+                if initialised_text is False:
+                    drone_id_text.append(RenderText("assets/fonts/Oswald.ttf", drone.id, scale_text(.02), "darkred"))
+                drone_id_text[index].blit((drone_pos[0] - scale_text(0.02), drone_pos[1] - scale_text(0.017)), drone.id)
 
             self._get_events()
             pg.display.update()
+            initialised_text = True
 
     def set_object(self, object: GlobalParser) -> None:
         self.object = object
