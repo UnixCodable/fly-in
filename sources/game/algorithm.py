@@ -28,25 +28,21 @@ class Algorithm():
         check_same_turn = len([p for p in self.paths
                                if len(p) >= pos and p[pos - 1] == next_hub])
         check_connection_link = len([p for p in self.paths if len(p) >= pos
-                                    and self.map.get_connection(p[pos - 1], p[pos - 2]) == connection])
-
-        if check_connection_link + 1 >= connection.max_link:
+                                     and p[pos - 1] == next_hub and p[pos - 2] == current_hub])
+        check_connection_issue = len([p for p in self.paths if len(p) >= pos
+                                      and p[pos - 1] == current_hub and p[pos - 2] == next_hub])
+        weight += check_connection_issue * 1000
+        if check_connection_link >= connection.max_link:
             if next_hub.zone == "restricted":
-                weight += ((check_connection_link + 1) / connection.max_link) * 2
+                weight += ((check_connection_link) / connection.max_link) + 1
             else:
-                weight += (check_connection_link + 1) / connection.max_link
-        else:
-            if next_hub.zone != "restricted":
-                weight -= ((check_connection_link) / connection.max_link)
+                weight += (check_connection_link) / connection.max_link
 
-        if check_same_turn + 1 >= next_hub.max_drones:
+        if check_same_turn >= next_hub.max_drones:
             if next_hub.zone == "restricted":
-                weight += ((check_same_turn + 1) / next_hub.max_drones) * 2
+                weight += ((check_same_turn) / next_hub.max_drones) + 1
             else:
-                weight += (check_same_turn + 1) / next_hub.max_drones
-        else:
-            if next_hub.zone != "restricted":
-                weight -= ((check_same_turn) / next_hub.max_drones)
+                weight += (check_same_turn) / next_hub.max_drones
 
         if next_hub.zone == "restricted":
             weight += 1
@@ -54,7 +50,7 @@ class Algorithm():
         if next_hub.zone == "priority":
             weight -= 1
 
-        if weight <= next_hub.weight and current_hub.pos < next_hub.pos or next_hub.pos == 0:
+        if weight <= next_hub.weight and current_hub.pos > next_hub.pos or next_hub.pos == 0:
             next_hub.pos = pos
             next_hub.weight = weight
 

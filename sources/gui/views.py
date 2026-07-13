@@ -539,7 +539,7 @@ class Game(View):
                 hub_zones_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), hub.zone)
                 hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.occupation) + "/" + str(hub.max_drones))
 
-            if time() > (last_time + 0.03):
+            if time() > (last_time + 0.3):
                 try:
                     next(turns)
                 except StopIteration:
