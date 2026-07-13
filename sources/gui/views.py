@@ -45,7 +45,11 @@ class RenderText():
         self.font = pg.font.Font(path, scaled_text)
         self.render = self.font.render(self.text,  True, color)
 
-    def blit(self, scaled_pos: tuple[int, int], new_text: str = None):
+    def blit(self, scaled_pos: tuple[int, int], new_text: str = None, new_size: int = None):
+        if new_size is not None:
+            self.font = pg.font.Font(self.path, new_size)
+            self.render = self.font.render(self.text, True, self.color)
+    
         if new_text is not None and new_text != self.text:
             self.text = new_text
             self.render = self.font.render(self.text, True, self.color)
@@ -192,6 +196,11 @@ class SettingsView(View):
                         "+" * Window.data['sound'],
                         scale_text(0.025)
                     )
+        resolution_current = RenderText(
+                        "assets/fonts/Starjhol.ttf",
+                        str(Window.data['resolution'])[1:-1].replace(',', ' x'),
+                        scale_text(0.015),
+                    )
         resolution_title = RenderText(
                         "assets/fonts/Starjhol.ttf",
                         "resolution :",
@@ -200,8 +209,7 @@ class SettingsView(View):
         sound_title = RenderText(
                         "assets/fonts/Starjhol.ttf",
                         "sound :",
-                        scale_text(0.015),
-                        scale_pos(0.105, 0.52)
+                        scale_text(0.015)
                     )
         fullscreen_title = RenderText(
                         "assets/fonts/Starjhol.ttf",
@@ -211,10 +219,11 @@ class SettingsView(View):
         while self.running:
             Window.animated_background()
             Window.animated_drone()
-            sound_indicator.blit(scale_pos(0.219, 0.518))
-            resolution_title.blit(scale_pos(0.06, 0.403))
-            sound_title.blit(scale_pos(0.105, 0.52))
-            fullscreen_title.blit(scale_pos(0.23, 0.285))
+            sound_indicator.blit(scale_pos(0.219, 0.518), "+" * Window.data['sound'], scale_text(0.025))
+            resolution_title.blit(scale_pos(0.06, 0.403), new_size=scale_text(0.015))
+            resolution_current.blit(scale_pos(0.26, 0.403), str(Window.data['resolution'])[1:-1].replace(',', ' x'), scale_text(0.015))
+            sound_title.blit(scale_pos(0.105, 0.52), new_size=scale_text(0.015))
+            fullscreen_title.blit(scale_pos(0.23, 0.285), new_size=scale_text(0.015))
             if Window.data["mode"] == "fullscreen":
                 self.buttons.settings_button_fullscreen_on.render()
             else:

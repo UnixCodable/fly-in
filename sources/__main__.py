@@ -35,9 +35,9 @@ class Visualizer():
     game = Game()
 
     def start(self):
-        # self.lucas.launch()
-        # self.intro.launch()
-        self.map_selection.launch()
+        self.lucas.launch()
+        self.intro.launch()
+        self.menu.launch()
         while True:
             for event in pg.event.get():
                 if event.type == ViewAction.GAME.value:
