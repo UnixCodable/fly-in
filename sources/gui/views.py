@@ -445,6 +445,11 @@ class Game(View):
                     if path[0] == self.object.get_end_hub():
                         pass
                     else:
+                        for d in self.drones:
+                            if d.get_current_pos() == path[0] and d.get_path()[0] == drone.get_current_pos():
+                                temp = d.get_path().copy()
+                                d.set_path(path[1:])
+                                drone.set_path(temp[1:])
                         continue
 
                 if path[0].zone == "restricted":

@@ -28,29 +28,26 @@ class Algorithm():
         check_same_turn = len([p for p in self.paths
                                if len(p) >= pos and p[pos - 1] == next_hub])
         check_connection_link = len([p for p in self.paths if len(p) >= pos
-                                     and p[pos - 1] == next_hub and p[pos - 2] == current_hub])
-        check_connection_issue = len([p for p in self.paths if len(p) >= pos
-                                      and p[pos - 1] == current_hub and p[pos - 2] == next_hub])
-        weight += check_connection_issue * 1000
-        if check_connection_link >= connection.max_link:
+                                    and self.map.get_connection(p[pos - 1], p[pos - 2]) == connection])
+
+        if check_same_turn < next_hub.max_drones:
             if next_hub.zone == "restricted":
-                weight += ((check_connection_link) / connection.max_link) + 1
-            else:
-                weight += (check_connection_link) / connection.max_link
-
-        if check_same_turn >= next_hub.max_drones:
+                weight += 1
+            if next_hub.zone == "priority":
+                weight -= 1
+        elif 0 < check_same_turn < next_hub.max_drones:
+            weight -= next_hub.max_drones - check_same_turn
+        elif next_hub.max_drones < check_same_turn:
+            weight += check_same_turn - next_hub.max_drones
             if next_hub.zone == "restricted":
-                weight += ((check_same_turn) / next_hub.max_drones) + 1
-            else:
-                weight += (check_same_turn) / next_hub.max_drones
+                weight += (check_same_turn - next_hub.max_drones) * 2
 
-        if next_hub.zone == "restricted":
-            weight += 1
+        if 0 < check_connection_link < connection.max_link:
+            weight -= connection.max_link - check_connection_link
+        elif connection.max_link < check_connection_link:
+            weight += (check_connection_link - connection.max_link)
 
-        if next_hub.zone == "priority":
-            weight -= 1
-
-        if weight <= next_hub.weight and current_hub.pos > next_hub.pos or next_hub.pos == 0:
+        if weight < next_hub.weight and current_hub.pos < next_hub.pos or next_hub.pos == 0:
             next_hub.pos = pos
             next_hub.weight = weight
 
@@ -82,7 +79,7 @@ class Algorithm():
                 if adj_hub not in opened:
                     opened.append(adj_hub)
 
-                opened = sorted(opened, key=lambda x: (x.weight))
+                opened = sorted(opened, key=lambda x: (x.weight, x.pos))
 
         current = self.start_hub
         # closed = []
@@ -91,7 +88,7 @@ class Algorithm():
             closed.append(current)
             adjacent = filter(lambda item: (current, item) not in issues and item.pos > current.pos, self._find_adjacent(current))
             try:
-                current = min([f for f in adjacent], key=lambda item: (item.weight + item.pos, item.pos))
+                current = min([f for f in adjacent], key=lambda item: (item.weight, item.pos))
                 path.append(current)
             except ValueError:
                 issues.append((closed[-2], current))
