@@ -31,6 +31,30 @@ from sources.tools.scales import scale_text, scale_pos, scale_size
 from sources.tools.window import Window
 
 
+class RenderText():
+    def __init__(self,
+                 path: str,
+                 text: str,
+                 scaled_text: int,
+                 scaled_pos: tuple[int, int],
+                 color: pg.Color = pg.Color(255, 255, 255)):
+        self.path = path
+        self.text = text
+        self.scaled_text = scaled_text
+        self.scaled_pos = scaled_pos
+        self.color = color
+
+        self.font = pg.font.Font(path, scaled_text)
+        self.render = self.font.render(self.text,  True, color)
+
+    def _blit(self, new_text: str):
+        if new_text != self.text:
+            self.text = new_text
+            self.render = self.font.render(self.text, True, self.color)
+
+        Window.surface.blit(self.render, self.scaled_pos)
+
+
 class View(ABC):
     running = True
 
