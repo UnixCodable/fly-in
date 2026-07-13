@@ -52,7 +52,7 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     line:        int = Field(ge=0)
     pos:       int = Field(default=0)
     h_pos:       int = Field(default=0)
-    weight:       int = Field(default=0)
+    weight:      float = Field(default=0.0)
     occupation:  int = Field(default=0)
 
     def add_occupant(self):

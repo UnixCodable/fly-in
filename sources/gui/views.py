@@ -516,7 +516,7 @@ class Game(View):
                 self._render_text("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), "black")
                 self._render_text("assets/fonts/Oswald.ttf", str(hub.occupation) + "/" + str(hub.max_drones), scale_text(.01), (game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), "white")
 
-            if time() > (last_time + 0.4):
+            if time() > (last_time + 0.03):
                 try:
                     next(turns)
                 except StopIteration:
