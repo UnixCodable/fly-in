@@ -10,6 +10,7 @@
 #                                                                             #
 # *************************************************************************** #
 
+import re
 from sqlite3 import connect
 import sys
 from time import time
@@ -398,81 +399,69 @@ class Game(View):
                     self.moving_down = False
 
     def _get_drones(self):
-        algorithm = Algorithm(self.object)
         drones = []
+        start_hub = self.object.get_start_hub()
         for nb in range(self.object.total_drone):
-            path = algorithm.run()
-            drones.append(Drone(f"D{nb}", self.object.get_start_hub(), path))
+            drones.append(Drone(f"D{nb}", start_hub))
+            start_hub.add_occupant(drones[-1].id)
         return drones
 
     def _execute_turns(self):
-        ended = []
+        algorithm = Algorithm(self.object)
+        end_hub = self.object.get_end_hub()
+        active_connection = []
+        restricted_drone = []
         turn = 0
 
-        yield
-        while len(ended) != len(self.drones):
-            turn += 1
-            moves: list[tuple[Drone, Connection | Hub]] = []
-            print(f"Turn {turn} : ", end="")
-
-            for c in self.object.connections:
-                if c.is_restricted() is False:
-                    c.reset_passages()
-
+        while True:
+            if len([d for d in self.drones if d.is_running() is True]) != 0:
+                turn += 1
+                print(f"\nTurn {turn} : ")
             for drone in self.drones:
-                path = drone.get_path()
-                # print(drone.id, [p.name for p in path])
-                if path == []:
-                    if drone not in ended:
-                        ended.append(drone)
+                if drone.is_running() is False:
                     continue
 
-                if drone.is_restricted():
-                    connection = self.object.get_connection(drone.get_last_pos(), drone.get_current_pos())
-                    connection.set_restriction(False)
-                    drone.set_restriction(False)
-                    moves.append((drone, drone.get_current_pos()))
+                if drone in restricted_drone:
+                    pos = drone.get_next_pos()
+                    # if pos is not None:
+                    print(f"{drone.id}-{pos.name}", end=" ")
+                    connection = self.object.get_connection(drone.get_current_pos(),
+                                                            drone.get_next_pos())
+                    restricted_drone.pop(restricted_drone.index(drone))
+                    active_connection.pop(active_connection.index(connection))
+                    drone.set_next_pos()
+                    drone.get_current_pos().remove_occupant(drone.id)
+                    drone.set_current_pos(pos)
                     continue
+                elif drone.get_next_pos() is None:
+                    pos = algorithm.run(drone)
+                    drone.set_next_pos(pos)
+                else:
+                    pos = drone.get_next_pos()
 
-                connection = self.object.get_connection(
-                    drone.get_current_pos(), path[0])
+                connection = self.object.get_connection(drone.get_current_pos(),
+                                                        drone.get_next_pos())
+                if connection is None:
+                    pg.quit
+                    sys.exit(1)
+                if len(pos.occupants) < pos.max_drones or pos == end_hub:
 
-                if path[0].is_full() or connection.is_full():
-                    # if connection.is_full():
-                    #     print(connection.first_zone + "-" + connection.second_zone, connection.get_passages(), "/", connection.max_link)
-                    # if path[0].is_full():
-                    #     print(path[0].name, path[0].occupation, "/", path[0].max_drones)
-                    if path[0] == self.object.get_end_hub():
-                        pass
+                    if pos.zone == "restricted":
+                        restricted_drone.append(drone)
+                        active_connection.append(connection)
+                        print(f"{drone.id}-{connection.first_zone}-{connection.second_zone}", end=" ")
                     else:
-                        for d in self.drones:
-                            if d.get_current_pos() == path[0] and d.get_path()[0] == drone.get_current_pos():
-                                temp = d.get_path().copy()
-                                d.set_path(path[1:])
-                                drone.set_path(temp[1:])
-                        continue
+                        print(f"{drone.id}-{pos.name}", end=" ")
+                        drone.set_next_pos()
+                        drone.get_current_pos().remove_occupant(drone.id)
+                        drone.set_current_pos(pos)
 
-                if path[0].zone == "restricted":
-                    moves.append((drone, connection))
-                    drone.set_restriction(True)
-                    connection.set_restriction(True)
-                else:
-                    moves.append((drone, path[0]))
+                    pos.add_occupant(drone.id)
+                    connection.set_passages(1)
 
-                drone.get_current_pos().remove_occupant()
-                drone.set_last_pos(drone.get_current_pos())
-                path[0].add_occupant()
-                drone.set_current_pos(path[0])
-                path.pop(0)
-                connection.set_passages(1)
-
-            for m in moves:
-                if type(m[1]) is Hub:
-                    print(f"{m[0].id}-{m[1].name}",
-                          end=" " if m != moves[-1] else "\n")
-                else:
-                    print(f"{m[0].id}-{m[1].first_zone}-{m[1].second_zone}",
-                          end=" " if m != moves[-1] else "\n")
+            for connection in self.object.connections:
+                if connection not in active_connection:
+                    connection.reset_passages()
 
             yield
 
@@ -486,9 +475,9 @@ class Game(View):
         turns = self._execute_turns()
         last_time = 0.0
 
-        drone_asset = pg.image.load("assets/gui/drone_top.png").convert_alpha()
-        drone_asset = pg.transform.smoothscale(drone_asset,
-                                               scale_size(0.04, 0.04))
+        # drone_asset = pg.image.load("assets/gui/drone_top.png").convert_alpha()
+        # drone_asset = pg.transform.smoothscale(drone_asset,
+        #                                        scale_size(0.04, 0.04))
         initialised_text = False
         hub_names_text = []
         hub_zones_text = []
@@ -539,10 +528,10 @@ class Game(View):
                 if initialised_text is False:
                     hub_names_text.append(RenderText("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), "black"))
                     hub_zones_text.append(RenderText("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), "black"))
-                    hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.occupation) + "/" + str(hub.max_drones), scale_text(.01), "white"))
+                    hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(len(hub.occupants)) + "/" + str(hub.max_drones), scale_text(.01), "white"))
                 hub_names_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), hub.name)
                 hub_zones_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), hub.zone)
-                hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.occupation) + "/" + str(hub.max_drones))
+                hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(len(hub.occupants)) + "/" + str(hub.max_drones))
 
             if time() > (last_time + 0.3):
                 try:

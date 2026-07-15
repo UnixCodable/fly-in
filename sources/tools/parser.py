@@ -144,6 +144,10 @@ class GlobalParser(BaseModel):
                     return c
         return None
 
+    def reset_scores(self) -> None:
+        for h in self.hubs:
+            h.score = -1
+
 
 class LineParser(BaseModel):
     is_first:           bool = Field()

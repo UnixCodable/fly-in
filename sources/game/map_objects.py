@@ -11,6 +11,7 @@
 # *************************************************************************** #
 
 from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class Connection(BaseModel):
@@ -19,6 +20,7 @@ class Connection(BaseModel):
     max_link:    int = Field(gt=0)
     line:        int = Field(ge=0)
     passages:    int = Field(default=0)
+    waiting: list[str] = Field(default=[])
     restricted: bool = Field(default=False)
 
     def reset_passages(self):
@@ -50,30 +52,30 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     zone:        str = Field(pattern=r"(restricted|priority|normal|blocked)")
     max_drones:  int = Field(gt=0)
     line:        int = Field(ge=0)
-    pos:       int = Field(default=0)
-    h_pos:       int = Field(default=0)
-    weight:      float = Field(default=0.0)
-    occupation:  int = Field(default=0)
+    score:       int = Field(default=-1)
+    occupants:  list[str] = Field(default=[])
+    parent:      str = Field(default="")
+    waiting:    list[str] = Field(default=[])
 
-    def add_occupant(self):
-        self.occupation += 1
+    def add_occupant(self, drone_id: str):
+        self.occupants.append(drone_id)
 
-    def remove_occupant(self):
-        self.occupation -= 1
+    def remove_occupant(self, drone_id: str):
+        self.occupants.pop(self.occupants.index(drone_id))
 
     def is_full(self) -> bool:
-        if self.occupation == self.max_drones:
+        if len(self.occupants) == self.max_drones:
             return True
         return False
 
 
 class Drone():
-    def __init__(self, id: str, current_pos: Hub, path: list[Hub]) -> None:
+    def __init__(self, id: str, current_pos: Hub) -> None:
         self.id = id
-        self._last_pos = current_pos
+        self._next_pos: Hub | None = None
         self._current_pos: Hub = current_pos
-        self._path: list[Hub] = path
-        self._restricted = False
+        self._running = True
+        self._visited: list[Hub] = []
 
     def set_current_pos(self, current_pos: Hub) -> None:
         self._current_pos = current_pos
@@ -81,22 +83,15 @@ class Drone():
     def get_current_pos(self) -> Hub:
         return self._current_pos
 
-    def set_last_pos(self, current_pos: Hub) -> None:
-        self._last_pos = current_pos
+    def set_next_pos(self, pos: Hub | None = None) -> None:
+        self._visited.append(pos)
+        self._next_pos = pos
 
-    def get_last_pos(self) -> Hub:
-        return self._last_pos
+    def get_next_pos(self) -> Hub | None:
+        return self._next_pos
 
-    def set_path(self, path: list[Hub]) -> None:
-        self._path = path
+    def is_running(self) -> bool:
+        return self._running
 
-    def get_path(self) -> list[Hub]:
-        return self._path
-
-    def set_restriction(self, boolean: bool):
-        self._restricted = boolean
-
-    def is_restricted(self):
-        if self._restricted is True:
-            return True
-        return False
+    def shutdown(self):
+        self._running = False
