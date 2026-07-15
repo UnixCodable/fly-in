@@ -147,6 +147,7 @@ class GlobalParser(BaseModel):
     def reset_scores(self) -> None:
         for h in self.hubs:
             h.score = -1
+            h.distance = 1
 
 
 class LineParser(BaseModel):

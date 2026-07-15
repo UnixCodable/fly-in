@@ -10,6 +10,8 @@
 #                                                                             #
 # *************************************************************************** #
 
+from turtle import distance
+
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -53,6 +55,7 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     max_drones:  int = Field(gt=0)
     line:        int = Field(ge=0)
     score:       int = Field(default=-1)
+    distance:    int = Field(default=10)
     occupants:  list[str] = Field(default=[])
     parent:      str = Field(default="")
     waiting:    list[str] = Field(default=[])
@@ -76,6 +79,7 @@ class Drone():
         self._current_pos: Hub = current_pos
         self._running = True
         self._visited: list[Hub] = []
+        self.distance: int = 0
 
     def set_current_pos(self, current_pos: Hub) -> None:
         self._current_pos = current_pos

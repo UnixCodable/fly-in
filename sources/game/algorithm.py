@@ -6,9 +6,11 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/07/14 07:11:09 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/15 04:10:09 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/15 13:39:37 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
+
+from sqlite3 import connect
 
 from sources.game.map_objects import Connection, Hub, Drone
 from sources.tools.parser import GlobalParser
@@ -19,23 +21,23 @@ class Algorithm():
         self.map: GlobalParser = map
         self.start_hub: Hub = self.map.get_start_hub()
         self.end_hub: Hub = self.map.get_end_hub()
-        self.locked: list[Hub] = []
 
     def _score(self, hub: Hub, connection: Connection):
-        score = 0
-        if hub.is_full():
+        score = 1
+        if len(hub.occupants) > 0:
             if hub.zone == "restricted":
-                score += ((len(hub.occupants) + len(hub.waiting)) * 10) * 2
+                score += (len(hub.occupants) + len(hub.waiting)) * 2
             else:
-                score += (len(hub.occupants) + len(hub.waiting)) * 10
-        if connection is not None and connection.is_full():
-            score += (len(connection.waiting) + connection.max_link) * 10
+                score += (len(hub.occupants) + len(hub.waiting))
+        if connection is not None and connection.get_passages() > 0:
+            if hub.zone == "restricted":
+                score += (len(connection.waiting) + connection.max_link) * 2
+            else:
+                score += (len(connection.waiting) + connection.max_link)
         if hub.zone == "restricted":
-            score += 30
-        if hub.zone == "normal":
-            score += 20
+            score += 1
         if hub.zone == "priority":
-            score += 10
+            score += -1
         return score
 
     def _find_adjacent(self, current_hub: Hub) -> list[Hub]:
@@ -55,7 +57,7 @@ class Algorithm():
         closed = []
         while self.end_hub not in opened:
 
-            current = min(opened, key=lambda x: x.score)
+            current = min(opened, key=lambda x: (x.distance + x.score))
             opened.pop(opened.index(current))
             closed.append(current)
 
@@ -66,6 +68,7 @@ class Algorithm():
                 connection = self.map.get_connection(current, adj)
                 if current.score + self._score(adj, connection) < adj.score or adj.score == -1:
                     # print(current.name, current.score)
+                    adj.distance += current.distance
                     adj.score = current.score + self._score(adj, connection)
                     adj.parent = current.name
                     opened.append(adj)
@@ -78,4 +81,5 @@ class Algorithm():
 
         if last_visited == self.end_hub:
             drone.shutdown()
+        drone.distance += last_visited.distance
         return last_visited

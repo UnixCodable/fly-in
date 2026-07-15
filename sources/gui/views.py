@@ -414,6 +414,7 @@ class Game(View):
         turn = 0
 
         while True:
+            self.drones = sorted(self.drones, key=lambda x: x.distance, reverse=True)
             if len([d for d in self.drones if d.is_running() is True]) != 0:
                 turn += 1
                 print(f"\nTurn {turn} : ")
@@ -533,7 +534,7 @@ class Game(View):
                 hub_zones_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), hub.zone)
                 hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(len(hub.occupants)) + "/" + str(hub.max_drones))
 
-            if time() > (last_time + 0.3):
+            if time() > (last_time + .3):
                 try:
                     next(turns)
                 except StopIteration:
