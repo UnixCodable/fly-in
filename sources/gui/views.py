@@ -407,64 +407,7 @@ class Game(View):
         return drones
 
     def _execute_turns(self):
-        algorithm = Algorithm(self.object)
-        end_hub = self.object.get_end_hub()
-        active_connection = []
-        restricted_drone = []
-        turn = 0
-
-        while True:
-            self.drones = sorted(self.drones, key=lambda x: x.distance, reverse=True)
-            if len([d for d in self.drones if d.is_running() is True]) != 0:
-                turn += 1
-                print(f"\nTurn {turn} : ")
-            for drone in self.drones:
-                if drone.is_running() is False:
-                    continue
-
-                if drone in restricted_drone:
-                    pos = drone.get_next_pos()
-                    # if pos is not None:
-                    print(f"{drone.id}-{pos.name}", end=" ")
-                    connection = self.object.get_connection(drone.get_current_pos(),
-                                                            drone.get_next_pos())
-                    restricted_drone.pop(restricted_drone.index(drone))
-                    active_connection.pop(active_connection.index(connection))
-                    drone.set_next_pos()
-                    drone.get_current_pos().remove_occupant(drone.id)
-                    drone.set_current_pos(pos)
-                    continue
-                elif drone.get_next_pos() is None:
-                    pos = algorithm.run(drone)
-                    drone.set_next_pos(pos)
-                else:
-                    pos = drone.get_next_pos()
-
-                connection = self.object.get_connection(drone.get_current_pos(),
-                                                        drone.get_next_pos())
-                if connection is None:
-                    pg.quit
-                    sys.exit(1)
-                if len(pos.occupants) < pos.max_drones or pos == end_hub:
-
-                    if pos.zone == "restricted":
-                        restricted_drone.append(drone)
-                        active_connection.append(connection)
-                        print(f"{drone.id}-{connection.first_zone}-{connection.second_zone}", end=" ")
-                    else:
-                        print(f"{drone.id}-{pos.name}", end=" ")
-                        drone.set_next_pos()
-                        drone.get_current_pos().remove_occupant(drone.id)
-                        drone.set_current_pos(pos)
-
-                    pos.add_occupant(drone.id)
-                    connection.set_passages(1)
-
-            for connection in self.object.connections:
-                if connection not in active_connection:
-                    connection.reset_passages()
-
-            yield
+        pass
 
     def launch(self) -> None:
 
@@ -472,13 +415,9 @@ class Game(View):
         self.drones: list[Drone] = self._get_drones()
         self.p_x = 0.1
         self.p_y = 0.46
-        # initialized = False
         turns = self._execute_turns()
         last_time = 0.0
 
-        # drone_asset = pg.image.load("assets/gui/drone_top.png").convert_alpha()
-        # drone_asset = pg.transform.smoothscale(drone_asset,
-        #                                        scale_size(0.04, 0.04))
         initialised_text = False
         hub_names_text = []
         hub_zones_text = []
@@ -556,6 +495,3 @@ class Game(View):
             self._get_events()
             pg.display.update()
             initialised_text = True
-
-    def set_object(self, object: GlobalParser) -> None:
-        self.object = object
