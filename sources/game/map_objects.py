@@ -10,8 +10,6 @@
 #                                                                             #
 # *************************************************************************** #
 
-from turtle import distance
-
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -79,7 +77,6 @@ class Drone():
         self._current_pos: Hub = current_pos
         self._running = True
         self._visited: list[Hub] = []
-        self.distance: int = 0
 
     def set_current_pos(self, current_pos: Hub) -> None:
         self._current_pos = current_pos
