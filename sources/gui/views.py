@@ -407,7 +407,8 @@ class Game(View):
         return drones
 
     def _execute_turns(self):
-        pass
+        while True:
+            yield
 
     def launch(self) -> None:
 
@@ -495,3 +496,6 @@ class Game(View):
             self._get_events()
             pg.display.update()
             initialised_text = True
+
+    def set_object(self, object: GlobalParser):
+        self.object = object
