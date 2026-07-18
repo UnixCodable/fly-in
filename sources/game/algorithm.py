@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/07/14 07:11:09 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/18 22:51:29 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/18 22:59:17 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -73,4 +73,4 @@ class Algorithm():
         return available
 
     def run(self):
-        
+        pass
