@@ -52,44 +52,26 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     zone:        str = Field(pattern=r"(restricted|priority|normal|blocked)")
     max_drones:  int = Field(gt=0)
     line:        int = Field(ge=0)
-    score:       int = Field(default=-1)
-    distance:    int = Field(default=10)
-    occupants:  list[str] = Field(default=[])
-    parent:      str = Field(default="")
-    waiting:    list[str] = Field(default=[])
+    occupants:   int = Field(default=0)
+    score:       int = Field(default=0)
+    distance:    int = Field(default=0)
+    remaining:   int = Field(default=0)
 
-    def add_occupant(self, drone_id: str):
-        self.occupants.append(drone_id)
-
-    def remove_occupant(self, drone_id: str):
-        self.occupants.pop(self.occupants.index(drone_id))
-
-    def is_full(self) -> bool:
-        if len(self.occupants) == self.max_drones:
-            return True
-        return False
+    def add_occupant(self):
+        self.occupants += 1
 
 
 class Drone():
     def __init__(self, id: str, current_pos: Hub) -> None:
         self.id = id
-        self._next_pos: Hub | None = None
         self._current_pos: Hub = current_pos
         self._running = True
-        self._visited: list[Hub] = []
 
     def set_current_pos(self, current_pos: Hub) -> None:
         self._current_pos = current_pos
 
     def get_current_pos(self) -> Hub:
         return self._current_pos
-
-    def set_next_pos(self, pos: Hub | None = None) -> None:
-        self._visited.append(pos)
-        self._next_pos = pos
-
-    def get_next_pos(self) -> Hub | None:
-        return self._next_pos
 
     def is_running(self) -> bool:
         return self._running
