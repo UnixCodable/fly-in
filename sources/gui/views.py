@@ -16,6 +16,7 @@ import sys
 from time import time
 import pygame as pg
 
+from sources.game import algorithm
 from sources.game.algorithm import Algorithm
 from sources.game.map_objects import Connection, Drone, Hub
 
@@ -407,7 +408,14 @@ class Game(View):
         return drones
 
     def _execute_turns(self):
+        algorithm = Algorithm(self.object)
+        turn = 0
+
         while True:
+            print(f"Turn {turn} : ", end="")
+            for d in self.drones:
+                hub = algorithm.check_hub()
+            turn += 1
             yield
 
     def launch(self) -> None:
@@ -416,8 +424,6 @@ class Game(View):
         self.drones: list[Drone] = self._get_drones()
         self.p_x = 0.1
         self.p_y = 0.46
-        Algorithm(self.object)._create_distance()
-        Algorithm(self.object)._create_remaining()
         turns = self._execute_turns()
         last_time = 0.0
 
@@ -472,11 +478,11 @@ class Game(View):
                     hub_names_text.append(RenderText("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), "black"))
                     hub_zones_text.append(RenderText("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), "black"))
                     # hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(len(hub.occupants)) + "/" + str(hub.max_drones), scale_text(.01), "white"))
-                    hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.distance + hub.remaining), scale_text(.01), "white"))
+                    hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.remaining), scale_text(.01), "white"))
                 hub_names_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), hub.name)
                 hub_zones_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), hub.zone)
                 # hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(len(hub.occupants)) + "/" + str(hub.max_drones))
-                hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.distance + hub.remaining))
+                hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.remaining))
 
             if time() > (last_time + .3):
                 try:

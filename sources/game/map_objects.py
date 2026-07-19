@@ -54,7 +54,6 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     line:        int = Field(ge=0)
     occupants:   int = Field(default=0)
     score:       int = Field(default=0)
-    distance:    int = Field(default=0)
     remaining:   int = Field(default=0)
 
     def add_occupant(self):
