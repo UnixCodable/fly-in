@@ -56,7 +56,7 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     locked:     bool = Field(default=False)
     waiting: list[str] = Field(default=[])
     score:       int = Field(default=0)
-    distance:   int = Field(default=0)
+    distance:    int = Field(default=0)
     remaining:   int = Field(default=0)
 
     def add_occupant(self):

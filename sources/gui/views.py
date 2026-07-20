@@ -410,6 +410,7 @@ class Game(View):
         algorithm = Algorithm(self.object)
         turn = 0
 
+        yield
         while True:
             turn += 1
             if len(self.drones) != len([d for d in self.drones if d.is_running() is False]):
@@ -422,6 +423,7 @@ class Game(View):
             for drone in self.drones:
                 if drone.is_running() is False:
                     continue
+
                 if drone.is_restricted():
                     connection = self.object.get_connection(
                         drone.get_current_pos(), drone.get_last_pos())
@@ -429,14 +431,17 @@ class Game(View):
                     drone.set_restriction(False)
                     print(f" {drone.id}-{drone.get_current_pos().name}", end="")
                     continue
+
                 hub = algorithm.check_hub(drone)
                 current = drone.get_current_pos()
                 connection = self.object.get_connection(hub, current)
                 if hub.is_full() and hub != self.object.get_end_hub():
-                    hub.waiting.append(drone.id)
+                    if drone.id not in hub.waiting:
+                        hub.waiting.append(drone.id)
                     continue
                 if connection.is_full():
-                    connection.waiting.append(drone.id)
+                    if drone.id not in connection.waiting:
+                        connection.waiting.append(drone.id)
                     continue
                 if hub.is_full() is False and connection.is_full() is False or hub == self.object.get_end_hub():
                     if drone.id in hub.waiting:
@@ -516,14 +521,14 @@ class Game(View):
                 if initialised_text is False:
                     hub_names_text.append(RenderText("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), "black"))
                     hub_zones_text.append(RenderText("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), "black"))
-                    # hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(len(hub.occupants)) + "/" + str(hub.max_drones), scale_text(.01), "white"))
+                    # hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.occupants) + "/" + str(hub.max_drones), scale_text(.01), "white"))
                     hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.remaining), scale_text(.01), "white"))
                 hub_names_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), hub.name)
                 hub_zones_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), hub.zone)
-                # hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(len(hub.occupants)) + "/" + str(hub.max_drones))
+                # hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.occupants) + "/" + str(hub.max_drones))
                 hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.remaining))
 
-            if time() > (last_time + .3):
+            if time() > (last_time + 2.3):
                 try:
                     next(turns)
                 except StopIteration:

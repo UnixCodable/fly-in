@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/07/14 07:11:09 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/20 03:35:47 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/21 00:16:35 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -41,9 +41,8 @@ class Algorithm():
             current = opened.pop(0)
             adjacent = self._find_adjacent(current)
 
-            if len(adjacent) == 1 and current != self.end_hub:
-                # print(adjacent[0].name)
-                while len(adjacent) == 1 and current != self.end_hub:
+            if len(adjacent) == 1 and current not in (self.end_hub, self.start_hub):
+                while len(adjacent) == 1 and current not in (self.end_hub, self.start_hub):
                     current.locked = True
                     current = adjacent[0]
                     adjacent = [adj for adj in self._find_adjacent(current) if adj.locked is False]
@@ -82,10 +81,14 @@ class Algorithm():
                 continue
             connection = self.map.get_connection(current, adj)
             if connection is not None:
+                self._update_score(adj, connection)
                 if drone.id in connection.waiting or drone.id in adj.waiting:
                     adjacent = [adj]
                     break
-                self._update_score(adj, connection)
+                else:
+                    for adj in adjacent:
+                        if adj.remaining > current.remaining:
+                            adjacent.pop(adjacent.index(adj))
 
         best_node = min(adjacent, key=lambda x: (x.remaining + x.score, x.remaining))
         if best_node == self.end_hub:
