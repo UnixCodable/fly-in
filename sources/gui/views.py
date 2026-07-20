@@ -16,7 +16,6 @@ import sys
 from time import time
 import pygame as pg
 
-from sources.game import algorithm
 from sources.game.algorithm import Algorithm
 from sources.game.map_objects import Connection, Drone, Hub
 
@@ -412,10 +411,50 @@ class Game(View):
         turn = 0
 
         while True:
-            print(f"Turn {turn} : ", end="")
-            for d in self.drones:
-                hub = algorithm.check_hub()
             turn += 1
+            if len(self.drones) != len([d for d in self.drones if d.is_running() is False]):
+                print(f"\nTurn {turn} :", end="")
+
+            for connection in self.object.connections:
+                if connection.is_restricted() is False:
+                    connection.reset_passages()
+
+            for drone in self.drones:
+                if drone.is_running() is False:
+                    continue
+                if drone.is_restricted():
+                    connection = self.object.get_connection(
+                        drone.get_current_pos(), drone.get_last_pos())
+                    connection.set_restriction(False)
+                    drone.set_restriction(False)
+                    print(f" {drone.id}-{drone.get_current_pos().name}", end="")
+                    continue
+                hub = algorithm.check_hub(drone)
+                current = drone.get_current_pos()
+                connection = self.object.get_connection(hub, current)
+                if hub.is_full() and hub != self.object.get_end_hub():
+                    hub.waiting.append(drone.id)
+                    continue
+                if connection.is_full():
+                    connection.waiting.append(drone.id)
+                    continue
+                if hub.is_full() is False and connection.is_full() is False or hub == self.object.get_end_hub():
+                    if drone.id in hub.waiting:
+                        hub.waiting.pop(hub.waiting.index(drone.id))
+                    if drone.id in connection.waiting:
+                        connection.waiting.pop(connection.waiting.index(drone.id))
+                    if hub.zone == "restricted":
+                        drone.set_restriction(True)
+                        connection.set_restriction(True)
+                        print(f" {drone.id}-{connection.first_zone}-{connection.second_zone}", end="")
+                    else:
+                        print(f" {drone.id}-{hub.name}", end="")
+                    drone.set_last_pos(current)
+                    hub.add_occupant()
+                    connection.set_passages(1)
+                    current.remove_occupant()
+                    drone.set_current_pos(hub)
+
             yield
 
     def launch(self) -> None:
