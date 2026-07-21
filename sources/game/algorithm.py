@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/07/14 07:11:09 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/21 00:16:35 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/21 07:49:50 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -90,8 +90,7 @@ class Algorithm():
                         if adj.remaining > current.remaining:
                             adjacent.pop(adjacent.index(adj))
 
-        best_node = min(adjacent, key=lambda x: (x.remaining + x.score, x.remaining))
-        if best_node == self.end_hub:
-            drone.shutdown()
+        best_node = min(adjacent, key=lambda x: (x.remaining + x.score,
+                                                 x.remaining))
 
         return best_node

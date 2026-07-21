@@ -77,7 +77,6 @@ class Drone():
         self._current_pos: Hub = current_pos
         self._last_pos: Hub = current_pos
         self._restricted: bool = False
-        self._running = True
 
     def set_current_pos(self, current_pos: Hub) -> None:
         self._current_pos = current_pos
@@ -96,9 +95,3 @@ class Drone():
 
     def is_restricted(self) -> bool:
         return self._restricted
-
-    def is_running(self) -> bool:
-        return self._running
-
-    def shutdown(self):
-        self._running = False

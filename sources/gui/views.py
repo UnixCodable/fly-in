@@ -408,34 +408,44 @@ class Game(View):
 
     def _execute_turns(self):
         algorithm = Algorithm(self.object)
+        end_hub = self.object.get_end_hub()
+        running = True
         turn = 0
 
-        yield
         while True:
             turn += 1
-            if len(self.drones) != len([d for d in self.drones if d.is_running() is False]):
+            if running is True:
                 print(f"\nTurn {turn} :", end="")
+            else:
+                yield
+                continue
 
             for connection in self.object.connections:
                 if connection.is_restricted() is False:
                     connection.reset_passages()
 
+            count = 0
             for drone in self.drones:
-                if drone.is_running() is False:
+
+                current = drone.get_current_pos()
+                last = drone.get_last_pos()
+
+                if current == end_hub and drone.is_restricted() is False:
+                    count += 1
+                    if len(self.drones) == count:
+                        running = False
                     continue
 
                 if drone.is_restricted():
-                    connection = self.object.get_connection(
-                        drone.get_current_pos(), drone.get_last_pos())
+                    connection = self.object.get_connection(current, last)
                     connection.set_restriction(False)
                     drone.set_restriction(False)
-                    print(f" {drone.id}-{drone.get_current_pos().name}", end="")
+                    print(f" {drone.id}-{current.name}", end="")
                     continue
 
                 hub = algorithm.check_hub(drone)
-                current = drone.get_current_pos()
                 connection = self.object.get_connection(hub, current)
-                if hub.is_full() and hub != self.object.get_end_hub():
+                if hub.is_full() and hub != end_hub:
                     if drone.id not in hub.waiting:
                         hub.waiting.append(drone.id)
                     continue
@@ -443,7 +453,7 @@ class Game(View):
                     if drone.id not in connection.waiting:
                         connection.waiting.append(drone.id)
                     continue
-                if hub.is_full() is False and connection.is_full() is False or hub == self.object.get_end_hub():
+                if hub.is_full() is False and connection.is_full() is False or hub == end_hub:
                     if drone.id in hub.waiting:
                         hub.waiting.pop(hub.waiting.index(drone.id))
                     if drone.id in connection.waiting:
@@ -528,7 +538,7 @@ class Game(View):
                 # hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.occupants) + "/" + str(hub.max_drones))
                 hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.remaining))
 
-            if time() > (last_time + 2.3):
+            if time() > (last_time + .3):
                 try:
                     next(turns)
                 except StopIteration:
