@@ -445,25 +445,32 @@ class Game(View):
 
                 hub = algorithm.check_hub(drone)
                 connection = self.object.get_connection(hub, current)
+
                 if hub.is_full() and hub != end_hub:
                     if drone.id not in hub.waiting:
                         hub.waiting.append(drone.id)
                     continue
+
                 if connection.is_full():
                     if drone.id not in connection.waiting:
                         connection.waiting.append(drone.id)
                     continue
+
                 if hub.is_full() is False and connection.is_full() is False or hub == end_hub:
+
                     if drone.id in hub.waiting:
                         hub.waiting.pop(hub.waiting.index(drone.id))
+
                     if drone.id in connection.waiting:
                         connection.waiting.pop(connection.waiting.index(drone.id))
+
                     if hub.zone == "restricted":
                         drone.set_restriction(True)
                         connection.set_restriction(True)
                         print(f" {drone.id}-{connection.first_zone}-{connection.second_zone}", end="")
                     else:
                         print(f" {drone.id}-{hub.name}", end="")
+
                     drone.set_last_pos(current)
                     hub.add_occupant()
                     connection.set_passages(1)
