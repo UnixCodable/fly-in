@@ -272,6 +272,7 @@ def read_map(path: str) -> Union[GlobalParser | str]:
                 print(path)
                 message = f"[ERROR] - (line {nb + 1}) : {e.get('msg')}"
             else:
+                print(path)
                 message = e.get('msg').split(', ', maxsplit=1)[1]
         message += "\n"
         message += 'Please ensure format is "<key>: <value> ... <[metadata]>."'

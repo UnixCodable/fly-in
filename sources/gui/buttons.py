@@ -10,6 +10,8 @@
 #                                                                             #
 # *************************************************************************** #
 
+from functools import lru_cache
+
 import pygame as pg
 import os
 
@@ -202,8 +204,10 @@ class MapSelectionButton(Button):
             for event in pg.event.get(pg.MOUSEWHEEL):
                 if event.y < 0:
                     pg.event.post(pg.event.Event(Action.SCROLL_DOWN.value))
+                    return
                 if event.y > 0:
                     pg.event.post(pg.event.Event(Action.SCROLL_UP.value))
+                    return
 
             if self.rect.collidepoint(mouse):
 

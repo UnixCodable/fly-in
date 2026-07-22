@@ -10,14 +10,12 @@
 #                                                                             #
 # *************************************************************************** #
 
-import re
-from sqlite3 import connect
 import sys
 from time import time
 import pygame as pg
 
 from sources.game.algorithm import Algorithm
-from sources.game.map_objects import Connection, Drone, Hub
+from sources.game.map_objects import Drone
 
 from ..tools.parser import GlobalParser, read_map
 from typing import Optional, Union
@@ -50,7 +48,7 @@ class RenderText():
         if new_size is not None:
             self.font = pg.font.Font(self.path, new_size)
             self.render = self.font.render(self.text, True, self.color)
-    
+
         if new_text is not None and new_text != self.text:
             self.text = new_text
             self.render = self.font.render(self.text, True, self.color)
@@ -169,6 +167,7 @@ class SettingsView(View):
                 except IndexError:
                     new = Window.data["res_list"][0]
                     Window.rewrite({"res_index": 0, "resolution": new})
+                Window.load_assets()
                 self.buttons.update()
             if event.type == Action.PLUS_RES.value:
                 res_list = Window.data["res_list"]
@@ -181,12 +180,14 @@ class SettingsView(View):
                     new = res_list[len(res_list) - 1]
                     Window.rewrite({"res_index": len(res_list) - 1,
                                     "resolution": new})
+                Window.load_assets()
                 self.buttons.update()
             if event.type == Action.FULLSCREEN_BOOL.value:
                 if Window.data["mode"] == "fullscreen":
                     Window.rewrite({"mode": "windowed"})
                 else:
                     Window.rewrite({"mode": "fullscreen"})
+                Window.load_assets()
                 self.buttons.update()
 
     def launch(self) -> None:
@@ -262,10 +263,10 @@ class MapSelectionView(View):
                 if event.key == pg.K_ESCAPE:
                     self.preview = None
             if event.type == Action.SCROLL_DOWN.value:
-                self.buttons.setter_scroll(0.03)
+                self.buttons.setter_scroll(0.1)
                 self.buttons.update()
             if event.type == Action.SCROLL_UP.value:
-                self.buttons.setter_scroll(-0.03)
+                self.buttons.setter_scroll(-0.1)
                 self.buttons.update()
             if event.type == Action.SCROLL_VIS_LEFT.value:
                 self.p_start -= 0.02
@@ -282,12 +283,17 @@ class MapSelectionView(View):
         if self.preview is None:
             return
         if isinstance(self.preview, str):
-            RenderText(
-                "assets/fonts/Oswald.ttf",
-                self.preview,
-                scale_text(0.013),
-                pg.Color(235, 33, 46)
-            ).blit(scale_pos(0.515, 0.51))
+            message = self.preview.split("\n")
+            start = 0.51
+            for m in message:
+                RenderText(
+                    "assets/fonts/Oswald.ttf",
+                    m,
+                    scale_text(0.012),
+                    pg.Color(235, 33, 46)
+                ).blit(scale_pos(0.515, start))
+                start += 0.04
+
             return
 
         RenderText(
@@ -538,12 +544,10 @@ class Game(View):
                 if initialised_text is False:
                     hub_names_text.append(RenderText("assets/fonts/Oswald.ttf", hub.name, scale_text(.01), "black"))
                     hub_zones_text.append(RenderText("assets/fonts/Oswald.ttf", hub.zone, scale_text(.01), "black"))
-                    # hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.occupants) + "/" + str(hub.max_drones), scale_text(.01), "white"))
-                    hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.remaining), scale_text(.01), "white"))
+                    hub_occupation_text.append(RenderText("assets/fonts/Oswald.ttf", str(hub.occupants) + "/" + str(hub.max_drones), scale_text(.01), "white"))
                 hub_names_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.017)), hub.name)
                 hub_zones_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(0.002)), hub.zone)
-                # hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.occupants) + "/" + str(hub.max_drones))
-                hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.remaining))
+                hub_occupation_text[index].blit((game_pos[0] - scale_text(0.02), game_pos[1] - scale_text(-0.036)), str(hub.occupants) + "/" + str(hub.max_drones))
 
             if time() > (last_time + .3):
                 try:

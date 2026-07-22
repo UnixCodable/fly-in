@@ -35,6 +35,7 @@ class Visualizer():
     game = Game()
 
     def start(self):
+        Window.load_assets()
         self.lucas.launch()
         self.intro.launch()
         self.menu.launch()
