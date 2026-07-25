@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/07/14 07:11:09 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/25 16:09:48 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/26 00:14:53 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -21,7 +21,7 @@ class Algorithm():
         self.end_hub: Hub = self.map.get_end_hub()
         self._create_remaining()
 
-    def _update_score(self, hub: Hub, connection: Connection):
+    def _update_score(self, hub: Hub, connection: Connection) -> None:
         hub.score = 0
         if hub.zone == "priority":
             hub.score -= 1
@@ -33,7 +33,7 @@ class Algorithm():
         if connection.is_full():
             hub.score += (len(connection.waiting) + connection.max_link)
 
-    def _create_remaining(self):
+    def _create_remaining(self) -> None:
         opened = [self.end_hub]
         opened[0].remaining += 1
 

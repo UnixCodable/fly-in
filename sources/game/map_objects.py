@@ -22,25 +22,23 @@ class Connection(BaseModel):
     waiting: list[str] = Field(default=[])
     restricted: bool = Field(default=False)
 
-    def reset_passages(self):
+    def reset_passages(self) -> None:
         self.passages = 0
 
-    def set_passages(self, value):
+    def set_passages(self, value: int) -> None:
         self.passages += value
 
-    def get_passages(self):
+    def get_passages(self) -> int:
         return self.passages
 
-    def is_restricted(self):
+    def is_restricted(self) -> bool:
         return self.restricted
 
-    def set_restriction(self, boolean: bool):
+    def set_restriction(self, boolean: bool) -> None:
         self.restricted = boolean
 
     def is_full(self) -> bool:
-        if self.passages == self.max_link:
-            return True
-        return False
+        return self.passages == self.max_link
 
 
 class Hub(BaseModel, arbitrary_types_allowed=True):
@@ -58,16 +56,14 @@ class Hub(BaseModel, arbitrary_types_allowed=True):
     distance:    int = Field(default=0)
     remaining:   int = Field(default=0)
 
-    def add_occupant(self):
+    def add_occupant(self) -> None:
         self.occupants += 1
 
-    def remove_occupant(self):
+    def remove_occupant(self) -> None:
         self.occupants -= 1
 
     def is_full(self) -> bool:
-        if self.occupants == self.max_drones:
-            return True
-        return False
+        return self.occupants == self.max_drones
 
 
 class Drone():

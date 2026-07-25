@@ -11,13 +11,16 @@
 # *************************************************************************** #
 
 import pygame as pg
+from typing import Any
 from sources.tools.settings import Settings
 
 pg.init()
 pg.display.set_caption("Fly-in : Echoes of the galaxy")
 
 
-class Window():
+class Window:
+    stars: pg.Surface
+    drone: pg.Surface
     settings = Settings()
     background_pos_y = 0
     drone_pos_y = 0
@@ -32,7 +35,8 @@ class Window():
         surface = pg.display.set_mode((width, height))
 
     @classmethod
-    def rewrite(cls, new_config: dict, reload_surface: bool = True) -> None:
+    def rewrite(cls, new_config: dict[str, Any],
+                reload_surface: bool = True) -> None:
         cls.settings._set_settings(new_config)
         cls.data = cls.settings._get_settings()
         cls.width, cls.height = cls.data["resolution"]
@@ -59,11 +63,11 @@ class Window():
         cls.surface.blit(cls.drone,
                          (cls.width * 0.5, cls.height * 0.3 + cls.drone_pos_y))
         if cls.drone_up is False:
-            cls.drone_pos_y -= cls.drone.get_height() * .0005
+            cls.drone_pos_y -= int(cls.drone.get_height() * .0005)
             if cls.drone_pos_y <= -int(cls.drone.get_height() * 0.025):
                 cls.drone_up = True
         elif cls.drone_up is True:
-            cls.drone_pos_y += cls.drone.get_height() * .0005
+            cls.drone_pos_y += int(cls.drone.get_height() * .0005)
             if cls.drone_pos_y >= int(cls.drone.get_height() * 0.025):
                 cls.drone_up = False
 

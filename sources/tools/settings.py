@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/24 05:48:29 by lbordana        #+#    #+#               #
-#  Updated: 2026/06/27 15:58:14 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/26 00:17:47 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -15,8 +15,8 @@ import pygame
 from typing import Any
 
 
-class Settings():
-    def _get_settings(self) -> dict:
+class Settings:
+    def _get_settings(self) -> dict[str, Any]:
         screen = [mode for mode in pygame.display.list_modes()
                   if int(mode[1] * (16/9)) == mode[0]]
         try:
