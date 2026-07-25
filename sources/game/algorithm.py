@@ -6,7 +6,7 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/07/14 07:11:09 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/21 07:49:50 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/25 16:09:48 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
@@ -41,11 +41,14 @@ class Algorithm():
             current = opened.pop(0)
             adjacent = self._find_adjacent(current)
 
-            if len(adjacent) == 1 and current not in (self.end_hub, self.start_hub):
-                while len(adjacent) == 1 and current not in (self.end_hub, self.start_hub):
+            if len(adjacent) == 1 and current not in (self.end_hub,
+                                                      self.start_hub):
+                while len(adjacent) == 1 and current not in (self.end_hub,
+                                                             self.start_hub):
                     current.locked = True
                     current = adjacent[0]
-                    adjacent = [adj for adj in self._find_adjacent(current) if adj.locked is False]
+                    adjacent = [adj for adj in self._find_adjacent(current)
+                                if adj.locked is False]
 
             for adj in adjacent:
                 if adj.locked is True:

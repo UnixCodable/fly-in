@@ -10,11 +10,8 @@
 #                                                                             #
 # *************************************************************************** #
 
-from functools import lru_cache
-
 import pygame as pg
 import os
-
 from enum import Enum
 from abc import ABC, abstractmethod
 from sources.tools.window import Window
