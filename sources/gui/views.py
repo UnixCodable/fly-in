@@ -16,7 +16,7 @@ from time import time
 from sources.game.algorithm import Algorithm
 from sources.game.map_objects import Drone
 from ..tools.parser import GlobalParser, read_map
-from typing import Generator, Optional, Union
+from typing import Generator
 from pyvidplayer2 import Video
 from abc import ABC, abstractmethod
 from sources.gui.buttons import (Action,
@@ -73,7 +73,7 @@ class Cinematics(View):
                  video: Video,
                  speed: float = 1,
                  begin_frame: int = 1,
-                 end_frame: Optional[int] = None):
+                 end_frame: int | None = None):
         self.video: Video = video
         self.video.set_speed(speed)
         self.video.seek_frame(begin_frame)
@@ -247,7 +247,7 @@ class SettingsView(View):
 
 class MapSelectionView(View):
     def __init__(self) -> None:
-        self.preview: Optional[Union[str, GlobalParser]] = None
+        self.preview: str | GlobalParser | None = None
         self.p_start = 0.54
 
     def _get_events(self) -> None:

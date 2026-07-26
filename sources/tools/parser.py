@@ -13,7 +13,7 @@
 from pydantic import BaseModel, model_validator, Field, ValidationError
 from enum import Enum
 from ..game.map_objects import Hub, Connection
-from typing import Optional, Self, Union
+from typing import Self
 
 
 # Constants
@@ -47,7 +47,7 @@ class Error(Enum):
     @classmethod
     def get_err(cls,
                 code: str,
-                line: Optional[Union[int, list[int]]] = None) -> str:
+                line: int | list[int] | None = None) -> str:
         if line is None:
             return f"[ERROR] : {Error[code].value}"
         return f"[ERROR] - (line {line}) : {Error[code].value}"
@@ -227,7 +227,7 @@ class LineParser(BaseModel):
         return self
 
 
-def read_map(path: str) -> Union[GlobalParser | str]:
+def read_map(path: str) -> GlobalParser | str:
     hub_list: list[Hub] = []
     connection_list: list[Connection] = []
     first = True
