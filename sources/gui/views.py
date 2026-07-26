@@ -435,11 +435,6 @@ class Game(View):
         while True:
             last_turn = turn
             ended = 0
-            # if running is not False:
-            #     print(f"\nTurn {turn} :", end="")
-            # else:
-            #     yield
-            #     continue
             if running is False:
                 if last_message is False:
                     print("\n\n********************************************")
@@ -622,8 +617,16 @@ class Game(View):
                 last_time = time()
             for index, drone in enumerate(self.drones):
                 hub = drone.get_current_pos()
-                drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
-                                      self.p_y + (hub.coordinates[1] / 6))
+                prev_hub = drone.get_last_pos()
+                if drone.is_restricted():
+                    drone_pos = scale_pos(
+                        self.p_x + (((hub.coordinates[0] / 2)
+                                     + (prev_hub.coordinates[0] / 2)) / 6),
+                        self.p_y + (((hub.coordinates[1] / 2)
+                                     + (prev_hub.coordinates[1] / 2)) / 6))
+                else:
+                    drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
+                                          self.p_y + (hub.coordinates[1] / 6))
 
                 pg.draw.circle(Window.surface,
                                "white",
