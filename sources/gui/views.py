@@ -422,16 +422,30 @@ class Game(View):
     def _execute_turns(self) -> Generator[None]:
         while self.object is None:
             yield
+        print("\n********************************************")
+        print("\n              SIMULATION START")
+        print("\n********************************************")
         algorithm = Algorithm(self.object)
         end_hub = self.object.get_end_hub()
         running = True
+        last_message = False
+        last_turn = 0
         turn = 0
 
         while True:
-            turn += 1
-            if running is True:
-                print(f"\nTurn {turn} :", end="")
-            else:
+            last_turn = turn
+            ended = 0
+            # if running is not False:
+            #     print(f"\nTurn {turn} :", end="")
+            # else:
+            #     yield
+            #     continue
+            if running is False:
+                if last_message is False:
+                    print("\n\n********************************************")
+                    print(f"\n       SIMULATION ENDED IN {turn} TURNS")
+                    print("\n********************************************")
+                    last_message = True
                 yield
                 continue
 
@@ -439,17 +453,20 @@ class Game(View):
                 if c.is_restricted() is False:
                     c.reset_passages()
 
-            count = 0
             for drone in self.drones:
 
                 current = drone.get_current_pos()
                 last = drone.get_last_pos()
 
                 if current == end_hub and drone.is_restricted() is False:
-                    count += 1
-                    if len(self.drones) == count:
+                    ended += 1
+                    if len(self.drones) == ended:
                         running = False
                     continue
+
+                if last_turn == turn and running is not False:
+                    turn += 1
+                    print(f"\n\nTurn {turn} :")
 
                 if drone.is_restricted():
                     connection = self.object.get_connection(current, last)
@@ -458,7 +475,7 @@ class Game(View):
                         sys.exit(1)
                     connection.set_restriction(False)
                     drone.set_restriction(False)
-                    print(f" {drone.id}-{current.name}", end="")
+                    print(f"{drone.id}-{current.name}", end=" ")
                     continue
 
                 hub = algorithm.check_hub(drone)
@@ -490,10 +507,10 @@ class Game(View):
                     if hub.zone == "restricted":
                         drone.set_restriction(True)
                         connection.set_restriction(True)
-                        print(f" {drone.id}-{connection.first_zone}"
-                              f"-{connection.second_zone}", end="")
+                        print(f"{drone.id}-{connection.first_zone}"
+                              f"-{connection.second_zone}", end=" ")
                     else:
-                        print(f" {drone.id}-{hub.name}", end="")
+                        print(f"{drone.id}-{hub.name}", end=" ")
 
                     drone.set_last_pos(current)
                     hub.add_occupant()
