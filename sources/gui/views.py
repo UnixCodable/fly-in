@@ -374,7 +374,7 @@ class MapSelectionView(View):
 
 class Game(View):
     def __init__(self) -> None:
-        self.object = None
+        self.object: GlobalParser
         self.moving_up = False
         self.moving_left = False
         self.moving_right = False
@@ -410,7 +410,7 @@ class Game(View):
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = False
 
-    def _get_drones(self) -> list[Drone] | None:
+    def _get_drones(self) -> list[Drone]:
         drones: list[Drone] = []
         if self.object is not None:
             start_hub = self.object.get_start_hub()
@@ -507,11 +507,11 @@ class Game(View):
         last_time = 0.0
 
         initialised_text = False
-        hub_names_text: list[str] = []
-        hub_zones_text: list[str] = []
-        hub_occupation_text: list[str] = []
-        connection_passages_text: list[str] = []
-        drone_id_text: list[str] = []
+        hub_names_text: list[RenderText] = []
+        hub_zones_text: list[RenderText] = []
+        hub_occupation_text: list[RenderText] = []
+        connection_passages_text: list[RenderText] = []
+        drone_id_text: list[RenderText] = []
 
         while self.running:
             Window.animated_background()
@@ -619,5 +619,5 @@ class Game(View):
             pg.display.update()
             initialised_text = True
 
-    def set_object(self, object: GlobalParser):
+    def set_object(self, object: GlobalParser) -> None:
         self.object = object
