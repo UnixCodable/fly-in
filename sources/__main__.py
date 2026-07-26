@@ -24,7 +24,7 @@ from .gui.views import (
     )
 
 
-class Visualizer():
+class Visualizer:
 
     Window()
     lucas = Cinematics(Video("assets/cinematics/lucasfilm.mp4"), end_frame=200)
@@ -34,7 +34,7 @@ class Visualizer():
     map_selection = MapSelectionView()
     game = Game()
 
-    def start(self):
+    def start(self) -> None:
         Window.load_assets()
         self.lucas.launch()
         self.intro.launch()

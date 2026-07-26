@@ -134,7 +134,7 @@ class GlobalParser(BaseModel):
         hub_search = [hub for hub in self.hubs if hub.hub_type == 'end_hub']
         return hub_search[0]
 
-    def get_connection(self, zone_1: Hub, zone_2: Hub) -> Optional[Connection]:
+    def get_connection(self, zone_1: Hub, zone_2: Hub) -> Connection | None:
         for c in self.connections:
             if c.first_zone == zone_1.name:
                 if c.second_zone == zone_2.name:

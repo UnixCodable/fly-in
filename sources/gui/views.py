@@ -435,9 +435,9 @@ class Game(View):
                 yield
                 continue
 
-            for connection in self.object.connections:
-                if connection.is_restricted() is False:
-                    connection.reset_passages()
+            for c in self.object.connections:
+                if c.is_restricted() is False:
+                    c.reset_passages()
 
             count = 0
             for drone in self.drones:
@@ -453,6 +453,9 @@ class Game(View):
 
                 if drone.is_restricted():
                     connection = self.object.get_connection(current, last)
+                    if connection is None:
+                        pg.quit()
+                        sys.exit(1)
                     connection.set_restriction(False)
                     drone.set_restriction(False)
                     print(f" {drone.id}-{current.name}", end="")
@@ -460,6 +463,9 @@ class Game(View):
 
                 hub = algorithm.check_hub(drone)
                 connection = self.object.get_connection(hub, current)
+                if connection is None:
+                    pg.quit()
+                    sys.exit(1)
 
                 if hub.is_full() and hub != end_hub:
                     if drone.id not in hub.waiting:
