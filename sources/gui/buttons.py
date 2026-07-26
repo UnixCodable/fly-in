@@ -331,10 +331,10 @@ class ButtonListSettings(ButtonList):
 
 class ButtonListMapSelection(ButtonList):
     def __init__(self) -> None:
-        self._scroll = 0
+        self._scroll = 0.0
         self.update()
 
-    def setter_scroll(self, value) -> None:
+    def setter_scroll(self, value: float) -> None:
         if self._scroll + value < 0:
             self._scroll = 0
         else:

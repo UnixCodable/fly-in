@@ -6,18 +6,18 @@
 #  By: lbordana <lbordana@student.42mulhouse.f   +#+  +:+       +#+         #
 #                                              +#+#+#+#+#+   +#+            #
 #  Created: 2026/06/27 02:15:46 by lbordana        #+#    #+#               #
-#  Updated: 2026/07/09 15:00:45 by lbordana        ###   ########.fr        #
+#  Updated: 2026/07/26 09:36:58 by lbordana        ###   ########.fr        #
 #                                                                           #
 # ************************************************************************* #
 
 from sources.tools.window import Window
 
 
-def scale_size(scale_x, scale_y) -> tuple[int, int]:
+def scale_size(scale_x: float, scale_y: float) -> tuple[int, int]:
     return (int(Window.width * scale_x), int(Window.width * scale_y))
 
 
-def scale_pos(scale_x, scale_y) -> tuple[int, int]:
+def scale_pos(scale_x: float, scale_y: float) -> tuple[int, int]:
     return (int(Window.width * scale_x), int(Window.height * scale_y))
 
 

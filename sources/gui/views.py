@@ -16,7 +16,7 @@ from time import time
 from sources.game.algorithm import Algorithm
 from sources.game.map_objects import Drone
 from ..tools.parser import GlobalParser, read_map
-from typing import Optional, Union
+from typing import Generator, Optional, Union
 from pyvidplayer2 import Video
 from abc import ABC, abstractmethod
 from sources.gui.buttons import (Action,
@@ -33,7 +33,7 @@ class RenderText:
                  path: str,
                  text: str,
                  scaled_text: int,
-                 color: pg.Color = pg.Color(255, 255, 255)):
+                 color: pg.Color | str = pg.Color(255, 255, 255)):
         self.path = path
         self.text = text
         self.scaled_text = scaled_text
@@ -43,7 +43,7 @@ class RenderText:
         self.render = self.font.render(self.text, True, color)
 
     def blit(self, scaled_pos: tuple[int, int], new_text: str | None = None,
-             new_size: int | None = None):
+             new_size: int | None = None) -> None:
         if new_size is not None:
             self.font = pg.font.Font(self.path, new_size)
             self.render = self.font.render(self.text, True, self.color)
@@ -59,7 +59,7 @@ class View(ABC):
     running = True
 
     @abstractmethod
-    def _get_events(self):
+    def _get_events(self) -> None:
         pass
 
     @abstractmethod
@@ -79,7 +79,7 @@ class Cinematics(View):
         self.video.seek_frame(begin_frame)
         self.end_frame = end_frame if end_frame else 0
 
-    def _get_events(self):
+    def _get_events(self) -> None:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.video.stop()
@@ -373,7 +373,7 @@ class MapSelectionView(View):
 
 
 class Game(View):
-    def __init__(self):
+    def __init__(self) -> None:
         self.object = None
         self.moving_up = False
         self.moving_left = False
@@ -410,15 +410,18 @@ class Game(View):
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = False
 
-    def _get_drones(self):
-        drones = []
-        start_hub = self.object.get_start_hub()
-        for nb in range(self.object.total_drone):
-            drones.append(Drone(f"D{nb}", start_hub))
-            start_hub.add_occupant()
+    def _get_drones(self) -> list[Drone] | None:
+        drones: list[Drone] = []
+        if self.object is not None:
+            start_hub = self.object.get_start_hub()
+            for nb in range(self.object.total_drone):
+                drones.append(Drone(f"D{nb}", start_hub))
+                start_hub.add_occupant()
         return drones
 
-    def _execute_turns(self):
+    def _execute_turns(self) -> Generator[None]:
+        while self.object is None:
+            yield
         algorithm = Algorithm(self.object)
         end_hub = self.object.get_end_hub()
         running = True
@@ -504,14 +507,16 @@ class Game(View):
         last_time = 0.0
 
         initialised_text = False
-        hub_names_text = []
-        hub_zones_text = []
-        hub_occupation_text = []
-        connection_passages_text = []
-        drone_id_text = []
+        hub_names_text: list[str] = []
+        hub_zones_text: list[str] = []
+        hub_occupation_text: list[str] = []
+        connection_passages_text: list[str] = []
+        drone_id_text: list[str] = []
 
         while self.running:
             Window.animated_background()
+            while self.object is None:
+                pass
 
             if self.moving_up is True:
                 self.p_y -= 0.01
