@@ -44,8 +44,9 @@ class RenderText:
 
     def blit(self, scaled_pos: tuple[int, int], new_text: str | None = None,
              new_size: int | None = None) -> None:
-        if new_size is not None:
+        if new_size is not None and new_size != self.scaled_text:
             self.font = pg.font.Font(self.path, new_size)
+            self.scaled_text = new_size
             self.render = self.font.render(self.text, True, self.color)
 
         if new_text is not None and new_text != self.text:
@@ -375,6 +376,8 @@ class MapSelectionView(View):
 class Game(View):
     def __init__(self) -> None:
         self.object: GlobalParser
+        self.zoom = False
+        self.dezoom = False
         self.moving_up = False
         self.moving_left = False
         self.moving_right = False
@@ -397,6 +400,10 @@ class Game(View):
                     self.moving_right = True
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = True
+                if event.key == pg.K_EQUALS:
+                    self.zoom = True
+                if event.key == pg.K_MINUS:
+                    self.dezoom = True
                 if event.key == pg.K_ESCAPE:
                     pg.event.post(pg.event.Event(ViewAction.MENU.value))
                     self.running = False
@@ -409,6 +416,10 @@ class Game(View):
                     self.moving_right = False
                 if event.key == pg.K_DOWN or event.key == pg.K_s:
                     self.moving_down = False
+                if event.key == pg.K_EQUALS:
+                    self.zoom = False
+                if event.key == pg.K_MINUS:
+                    self.dezoom = False
 
     def _get_drones(self) -> list[Drone]:
         drones: list[Drone] = []
@@ -523,6 +534,7 @@ class Game(View):
         self.p_y = 0.46
         turns = self._execute_turns()
         last_time = 0.0
+        scale = 1.0
 
         initialised_text = False
         hub_names_text: list[RenderText] = []
@@ -544,21 +556,31 @@ class Game(View):
                 self.p_y += 0.01
             if self.moving_right is True:
                 self.p_x += 0.01
+            if self.zoom is True:
+                scale += 0.003
+            if self.dezoom is True:
+                scale -= 0.003
 
             for index, connection in enumerate(self.object.connections):
                 zone_1 = self.object.get_hub(connection.first_zone)
                 zone_2 = self.object.get_hub(connection.second_zone)
-                zone_1_pos = scale_pos(self.p_x + (zone_1.coordinates[0] / 6),
-                                       self.p_y + (zone_1.coordinates[1] / 6))
-                zone_2_pos = scale_pos(self.p_x + (zone_2.coordinates[0] / 6),
-                                       self.p_y + (zone_2.coordinates[1] / 6))
-                pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 6)
+                zone_1_pos = scale_pos(
+                    (self.p_x + (zone_1.coordinates[0] / 3)) * scale,
+                    (self.p_y + (zone_1.coordinates[1] / 3)) * scale)
+                zone_2_pos = scale_pos(
+                    (self.p_x + (zone_2.coordinates[0] / 3)) * scale,
+                    (self.p_y + (zone_2.coordinates[1] / 3)) * scale)
+                pg.draw.line(Window.surface,
+                             "grey",
+                             zone_1_pos,
+                             zone_2_pos,
+                             int(6 * scale))
                 if initialised_text is False:
                     connection_passages_text.append(
                         RenderText("assets/fonts/Oswald.ttf",
                                    (str(connection.get_passages())
                                     + "/" + str(connection.max_link)),
-                                   scale_text(.01), "white"))
+                                   scale_text(.01 * scale), "white"))
                 connection_passages_text[index].blit(
                     (zone_1_pos[0] + int((zone_2_pos[0] - zone_1_pos[0]) / 2),
                      zone_1_pos[1] + int((zone_2_pos[1] - zone_1_pos[1]) / 2)),
@@ -566,8 +588,9 @@ class Game(View):
                      + "/" + str(connection.max_link)))
 
             for index, hub in enumerate(self.object.hubs):
-                game_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
-                                     self.p_y + (hub.coordinates[1] / 6))
+                game_pos = scale_pos(
+                    (self.p_x + (hub.coordinates[0] / 3)) * scale,
+                    (self.p_y + (hub.coordinates[1] / 3)) * scale)
                 if hub.color in pg.color.THECOLORS:
                     color = hub.color
                 else:
@@ -576,40 +599,46 @@ class Game(View):
                 pg.draw.circle(Window.surface,
                                color,
                                game_pos,
-                               scale_text(0.04), 20)
+                               scale_text(0.04 * scale), 20)
                 pg.draw.circle(Window.surface,
                                "wheat",
                                game_pos,
-                               scale_text(0.035))
+                               scale_text(0.035 * scale))
                 if initialised_text is False:
                     hub_names_text.append(
                         RenderText("assets/fonts/Oswald.ttf",
                                    hub.name,
-                                   scale_text(.01),
+                                   scale_text(.01 * scale),
                                    "black"))
                     hub_zones_text.append(
                         RenderText("assets/fonts/Oswald.ttf",
                                    hub.zone,
-                                   scale_text(.01),
+                                   scale_text(.01 * scale),
                                    "black"))
                     hub_occupation_text.append(
                         RenderText("assets/fonts/Oswald.ttf",
                                    (str(hub.occupants) + "/"
                                     + str(hub.max_drones)),
-                                   scale_text(.01),
+                                   scale_text(.01 * scale),
                                    "white"))
-                hub_names_text[index].blit(
-                    (game_pos[0] - scale_text(0.02),
-                     game_pos[1] - scale_text(0.017)), hub.name)
-                hub_zones_text[index].blit(
-                    (game_pos[0] - scale_text(0.02),
-                     game_pos[1] - scale_text(0.002)), hub.zone)
-                hub_occupation_text[index].blit(
-                    (game_pos[0] - scale_text(0.02),
-                     game_pos[1] - scale_text(-0.036)),
-                    str(hub.occupants) + "/" + str(hub.max_drones))
+                if any((self.zoom, self.dezoom)) is False:
+                    hub_names_text[index].blit(
+                        (game_pos[0] - scale_text(0.02 * scale),
+                            game_pos[1] - scale_text(0.017 * scale)),
+                        hub.name,
+                        scale_text(.01 * scale))
+                    hub_zones_text[index].blit(
+                        (game_pos[0] - scale_text(0.02 * scale),
+                            game_pos[1] - scale_text(0.002 * scale)),
+                        hub.zone,
+                        scale_text(.01 * scale))
+                    hub_occupation_text[index].blit(
+                        (game_pos[0] - scale_text(0.02 * scale),
+                            game_pos[1] - scale_text(-0.036 * scale)),
+                        str(hub.occupants) + "/" + str(hub.max_drones),
+                        scale_text(.01 * scale))
 
-            if time() > (last_time + .3):
+            if time() > (last_time + 1):
                 try:
                     next(turns)
                 except StopIteration:
@@ -620,26 +649,31 @@ class Game(View):
                 prev_hub = drone.get_last_pos()
                 if drone.is_restricted():
                     drone_pos = scale_pos(
-                        self.p_x + (((hub.coordinates[0] / 2)
-                                     + (prev_hub.coordinates[0] / 2)) / 6),
-                        self.p_y + (((hub.coordinates[1] / 2)
-                                     + (prev_hub.coordinates[1] / 2)) / 6))
+                        (self.p_x
+                         + (((hub.coordinates[0] / 2)
+                             + (prev_hub.coordinates[0] / 2)) / 3)) * scale,
+                        (self.p_y
+                         + (((hub.coordinates[1] / 2)
+                             + (prev_hub.coordinates[1] / 2)) / 3)) * scale)
                 else:
-                    drone_pos = scale_pos(self.p_x + (hub.coordinates[0] / 6),
-                                          self.p_y + (hub.coordinates[1] / 6))
+                    drone_pos = scale_pos(
+                        (self.p_x + (hub.coordinates[0] / 3)) * scale,
+                        (self.p_y + (hub.coordinates[1] / 3)) * scale)
 
                 pg.draw.circle(Window.surface,
                                "white",
                                drone_pos,
-                               scale_text(0.03))
+                               scale_text(0.03 * scale))
                 if initialised_text is False:
                     drone_id_text.append(RenderText("assets/fonts/Oswald.ttf",
                                                     drone.id,
                                                     scale_text(.02),
                                                     "darkred"))
-                drone_id_text[index].blit((drone_pos[0] - scale_text(0.02),
-                                           drone_pos[1] - scale_text(0.017)),
-                                          drone.id)
+                if any((self.zoom, self.dezoom)) is False:
+                    drone_id_text[index].blit(
+                        (drone_pos[0] - scale_text(0.02 * scale),
+                         drone_pos[1] - scale_text(0.017 * scale)),
+                        drone.id, scale_text(.02 * scale))
 
             self._get_events()
             pg.display.update()
