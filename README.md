@@ -44,5 +44,9 @@ make lint-strict
 
 **Links**:
 
+- Pygame documentation : https://www.pygame.org/docs/
 - Button manipulation in pygame : https://www.youtube.com/watch?v=jyrP0dDGqgY
-- 
+- How to play videos in pygame : https://www.youtube.com/watch?v=K8PoK3533es
+- Dijkstra logic : https://www.youtube.com/watch?v=bZkzH5x0SKU
+
+## 

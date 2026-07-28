@@ -324,7 +324,7 @@ class MapSelectionView(View):
 
         for hub in self.preview.hubs:
             preview_scale = scale_pos(self.p_start + (hub.coordinates[0] / 30),
-                                      0.3 + (hub.coordinates[1] / 30))
+                                      0.3 + -(hub.coordinates[1] / 30))
             if viewer.collidepoint(preview_scale):
                 try:
                     pg.draw.circle(Window.surface,
@@ -340,10 +340,10 @@ class MapSelectionView(View):
         for connection in self.preview.connections:
             zone_1 = self.preview.get_hub(connection.first_zone)
             zone_1_pos = scale_pos(self.p_start + (zone_1.coordinates[0] / 30),
-                                   0.3 + (zone_1.coordinates[1] / 30))
+                                   0.3 + -(zone_1.coordinates[1] / 30))
             zone_2 = self.preview.get_hub(connection.second_zone)
             zone_2_pos = scale_pos(self.p_start + (zone_2.coordinates[0] / 30),
-                                   0.3 + (zone_2.coordinates[1] / 30))
+                                   0.3 + -(zone_2.coordinates[1] / 30))
             if (viewer.collidepoint(zone_1_pos)
                     and viewer.collidepoint(zone_2_pos)):
                 pg.draw.line(Window.surface, "grey", zone_1_pos, zone_2_pos, 3)
@@ -566,10 +566,10 @@ class Game(View):
                 zone_2 = self.object.get_hub(connection.second_zone)
                 zone_1_pos = scale_pos(
                     (self.p_x + (zone_1.coordinates[0] / 3)) * scale,
-                    (self.p_y + (zone_1.coordinates[1] / 3)) * scale)
+                    (self.p_y + -(zone_1.coordinates[1] / 3)) * scale)
                 zone_2_pos = scale_pos(
                     (self.p_x + (zone_2.coordinates[0] / 3)) * scale,
-                    (self.p_y + (zone_2.coordinates[1] / 3)) * scale)
+                    (self.p_y + -(zone_2.coordinates[1] / 3)) * scale)
                 pg.draw.line(Window.surface,
                              "grey",
                              zone_1_pos,
@@ -590,7 +590,7 @@ class Game(View):
             for index, hub in enumerate(self.object.hubs):
                 game_pos = scale_pos(
                     (self.p_x + (hub.coordinates[0] / 3)) * scale,
-                    (self.p_y + (hub.coordinates[1] / 3)) * scale)
+                    (self.p_y + -(hub.coordinates[1] / 3)) * scale)
                 if hub.color in pg.color.THECOLORS:
                     color = hub.color
                 else:
@@ -653,12 +653,12 @@ class Game(View):
                          + (((hub.coordinates[0] / 2)
                              + (prev_hub.coordinates[0] / 2)) / 3)) * scale,
                         (self.p_y
-                         + (((hub.coordinates[1] / 2)
+                         + -(((hub.coordinates[1] / 2)
                              + (prev_hub.coordinates[1] / 2)) / 3)) * scale)
                 else:
                     drone_pos = scale_pos(
                         (self.p_x + (hub.coordinates[0] / 3)) * scale,
-                        (self.p_y + (hub.coordinates[1] / 3)) * scale)
+                        (self.p_y + -(hub.coordinates[1] / 3)) * scale)
 
                 pg.draw.circle(Window.surface,
                                "white",
