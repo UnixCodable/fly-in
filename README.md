@@ -10,6 +10,39 @@ This fleet of drone must reach the ending zone within a minimum of turns.
 
 ## Instructions
 
+First the project will be much more appreciated with **[SOUND ON]**
 
+Then, you'll need to install all the dependencies :
 
-https://www.youtube.com/watch?v=jyrP0dDGqgY
+```bash
+make install
+```
+
+After that you can launch the program with :
+
+```bash
+make run
+```
+
+In case of corrupted settings, please delete the file **settings.json**, it will regenerate a default one.
+
+To check for mypy and flake8 norms, please run :
+
+```bash
+make lint
+```
+
+or
+
+```bash
+make lint-strict
+```
+
+## Resources
+
+**AI Usage :** I do not use AI for coding or as a tutor. It is only used for assets generation.
+
+**Links**:
+
+- Button manipulation in pygame : https://www.youtube.com/watch?v=jyrP0dDGqgY
+- 
