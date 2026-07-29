@@ -49,4 +49,12 @@ make lint-strict
 - How to play videos in pygame : https://www.youtube.com/watch?v=K8PoK3533es
 - Dijkstra logic : https://www.youtube.com/watch?v=bZkzH5x0SKU
 
-## 
+## Algorithm
+
+Firstly, I've tried to go with an original A* algorithm, but finding the right heuristic became way too complicated.
+
+I was roughly good on the basic maps for the project, but was unable to handle multiple paths simultaneously.
+
+*Example : On Orobert Spaghetti's map, I was doing everything in 102 turns, against 46 now.*
+
+That's why I've tried 4 times making it again before going on an inverted Dijkstra : A Dijkstra that start at the end_hub, and will reveal the exact number of turn for every node.
